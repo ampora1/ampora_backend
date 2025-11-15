@@ -1,4 +1,7 @@
 package com.ev.ampora_backend.repository;
 
-public class StationRepository {
+import com.ev.ampora_backend.entity.Station;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface StationRepository extends JpaRepository<Station,String> {
 }
