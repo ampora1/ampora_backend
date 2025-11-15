@@ -2,6 +2,7 @@ package com.ev.ampora_backend.controller;
 
 import com.ev.ampora_backend.dto.LoginRequest;
 import com.ev.ampora_backend.dto.RegisterRequest;
+import com.ev.ampora_backend.dto.UserDTO;
 import com.ev.ampora_backend.dto.UserResponse;
 import com.ev.ampora_backend.entity.User;
 import com.ev.ampora_backend.service.UserService;
@@ -17,7 +18,7 @@ public class AuthController {
     private final UserService userService;
 
     @PostMapping("/register")
-    public UserResponse register(@RequestBody RegisterRequest request) {
+    public UserDTO register(@RequestBody RegisterRequest request) {
         return userService.register(request);
     }
 
@@ -25,7 +26,7 @@ public class AuthController {
     public UserResponse login(@RequestBody LoginRequest request) {
         User user = userService.login(request.getEmail(), request.getPassword());
         return new UserResponse(
-                user.getUserId(),
+                user.getUserId().toString(),
                 user.getFullName(),
                 user.getEmail(),
                 user.getPhone(),

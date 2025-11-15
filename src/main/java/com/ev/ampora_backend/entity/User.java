@@ -3,6 +3,7 @@ package com.ev.ampora_backend.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+
 @Entity
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
@@ -10,17 +11,13 @@ import lombok.*;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String userId;
+    @Column(name = "user_id", nullable = false)
+    private String userId;  // <-- KEEP AS STRING
 
     private String fullName;
-
-    @Column(unique = true)
     private String email;
-
-    private String password;
-
     private String phone;
+    private String password;
 
     @Enumerated(EnumType.STRING)
     private Role role;
