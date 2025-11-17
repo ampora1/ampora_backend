@@ -1,4 +1,8 @@
 package com.ev.ampora_backend.repository;
 
-public class ChargerRepository {
+import com.ev.ampora_backend.entity.Charger;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface  ChargerRepository extends JpaRepository<Charger,String> {
+
 }

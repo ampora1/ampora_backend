@@ -1,8 +1,7 @@
 package com.ev.ampora_backend.entity;
 
-public enum ChargerStatus {
+public enum   ChargerStatus {
     AVAILABLE,
-    OCCUPIED,
-    RESERVED,
-    OFFLINE
+    UNAVAILABLE,
+    MAINTENANCE
 }
