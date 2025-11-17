@@ -71,6 +71,19 @@ public class UserService {
         return mapToDto(user);
     }
 
+    public List<UserDTO> getUserByName(String name) {
+        List<User> users =
+                userRepository.findByFullNameContainingIgnoreCase(name);
+
+        if (users.isEmpty()) {
+            throw new ResourceNotFoundException("No users found with name: " + name);
+        }
+
+        return users.stream()
+                .map(this::mapToDto)
+                .toList();
+    }
+
 
     public void deleteUser(String id) {
         if (!userRepository.existsById(id)) {

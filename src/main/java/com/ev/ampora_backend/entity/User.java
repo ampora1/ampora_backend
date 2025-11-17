@@ -3,6 +3,9 @@ package com.ev.ampora_backend.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 @Entity
 @Getter @Setter
@@ -23,8 +26,9 @@ public class User {
     private Role role;
 
     // One user → One vehicle
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    private Vehicle vehicle;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Vehicle> vehicles = new ArrayList<>();
+
 
     // Subscription
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)

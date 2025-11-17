@@ -31,6 +31,11 @@ public class UserController {
         return userService.getUserById(id);
     }
 
+    @GetMapping("/search")
+    public List<UserDTO> search(@RequestParam String name) {
+        return userService.getUserByName(name);
+    }
+
 
 //    @PutMapping("/{id}")
 //    public ResponseEntity<UserDTO> updateUser(

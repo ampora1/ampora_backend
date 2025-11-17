@@ -18,7 +18,8 @@ public class Vehicle {
     private double efficiencyKmPerKwh;
     private String connectorType; // CCS2 / CHAdeMO / Type2
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
 }
