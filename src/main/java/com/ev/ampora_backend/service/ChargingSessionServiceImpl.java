@@ -35,22 +35,36 @@ public class ChargingSessionServiceImpl implements  ChargingSessionService{
      }
 
     @Override
-    public ChargingSessionRequestDTO update(String id, ChargingSessionRequestDTO dto) {
-        return null;
+    public ChargingSessionResponseDTO update(String id, ChargingSessionRequestDTO dto) {
+        ChargingSession cs =chargingSessionRepo.findById(id).orElseThrow(() -> new RuntimeException("charging session is not found"));
+        User user =userRepo.findById(dto.getUserId()).orElseThrow(() -> new RuntimeException("User not found"));
+        Charger charger=chargerRepo.findById(dto.getChargerId()).orElseThrow(() -> new RuntimeException("Charger Not found"));
+        cs.setSessionId(id);
+        cs.setUser(user);
+        cs.setCharger(charger);
+        cs.setEnergyUsedKwh(dto.getEnergyUsedKwh());
+        cs.setCost(dto.getCost());
+        cs.setStartTime(dto.getStartTime());
+        cs.setEndTime(dto.getEndTime());
+        cs.setSessionStatus(dto.getSessionStatus());
+        chargingSessionRepo.save(cs);
+        return  toDto(cs);
     }
 
     @Override
     public ChargingSessionResponseDTO getSessionById(String id) {
-        return null;
+         ChargingSession cs = chargingSessionRepo.findById(id).orElseThrow(() -> new RuntimeException("Charger Session not found"));
+         return  toDto(cs);
     }
 
     @Override
-    public List<ChargingSessionResponseDTO> getAllSession(ChargingSessionRequestDTO dto) {
-        return List.of();
+    public List<ChargingSessionResponseDTO> getAllSession() {
+         return  chargingSessionRepo.findAll().stream().map(this::toDto).toList();
     }
+
 
     @Override
     public void deleteSession(String id) {
-
+         chargingSessionRepo.deleteById(id);
     }
 }
