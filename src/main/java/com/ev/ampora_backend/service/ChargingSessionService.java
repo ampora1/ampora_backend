@@ -7,9 +7,9 @@ import java.util.List;
 
 public interface ChargingSessionService {
     ChargingSessionResponseDTO create(ChargingSessionRequestDTO dto);
-    ChargingSessionRequestDTO update(String id,ChargingSessionRequestDTO dto);
+    ChargingSessionResponseDTO update(String id,ChargingSessionRequestDTO dto);
     ChargingSessionResponseDTO getSessionById(String id);
-    List<ChargingSessionResponseDTO> getAllSession(ChargingSessionRequestDTO dto);
+    List<ChargingSessionResponseDTO> getAllSession();
     void deleteSession(String id);
 
 }

@@ -1,4 +1,7 @@
 package com.ev.ampora_backend.repository;
 
-public class SubscriptionRepository {
+import com.ev.ampora_backend.entity.Subscription;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface SubscriptionRepository extends JpaRepository<Subscription,String> {
 }

@@ -8,6 +8,7 @@ import com.ev.ampora_backend.entity.User;
 import com.ev.ampora_backend.entity.Vehicle;
 import com.ev.ampora_backend.repository.UserRepository;
 import com.ev.ampora_backend.repository.VehicleRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +16,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+
 public class VehicleService {
   private final VehicleRepository vehicleRepo;
   private final UserRepository userRepo;
@@ -35,17 +37,33 @@ public class VehicleService {
   public VehicleDTO getVehicleById(String id){
      Vehicle v =vehicleRepo.findById(id).orElseThrow(() -> new RuntimeException("Vehicle not find"));
 
-     return VehicleDTO.builder().vehicleId(v.getVehicleId()).model(v.getModel()).batteryCapacityKwh(v.getBatteryCapacityKwh()).batteryCapacityKwh(v.getBatteryCapacityKwh()).connectorType(v.getConnectorType()).userId(v.getUser().getUserId()).build();
+     return VehicleDTO.builder().vehicleId(v.getVehicleId()).model(v.getModel()).batteryCapacityKwh(v.getBatteryCapacityKwh()).efficiencyKmPerKwh(v.getEfficiencyKmPerKwh()).connectorType(v.getConnectorType()).userId(v.getUser().getUserId()).build();
   }
 
   public void deleteVehicle(String id){
+      System.out.println("Deleting Vehicle ID: " + id);
       if(!vehicleRepo.existsById(id)){
           throw new RuntimeException("Vehicle not found");
       }
       vehicleRepo.deleteById(id);
   }
+    public List<VehicleDTO> getVehicleByuserId(String userId) {
+        List<Vehicle> vehicles = vehicleRepo.findByUser_UserId(userId);
 
-  public  VehicleDTO upDateVehicle(String id,VehicleDTO dto){
+        return vehicles.stream()
+                .map(v -> VehicleDTO.builder()
+                        .vehicleId(v.getVehicleId())
+                        .model(v.getModel())
+                        .batteryCapacityKwh(v.getBatteryCapacityKwh())
+                        .efficiencyKmPerKwh(v.getEfficiencyKmPerKwh())
+                        .connectorType(v.getConnectorType())
+                        .userId(v.getUser().getUserId())
+                        .build())
+                .toList();
+    }
+
+
+    public  VehicleDTO upDateVehicle(String id,VehicleDTO dto){
       Vehicle vehicle = vehicleRepo.findById(id).orElseThrow(()-> new RuntimeException("Vehicle not found"));
       User user =userRepo.findById(dto.getUserId()).orElseThrow(()->new RuntimeException("User not found"));
       vehicle.setModel(dto.getModel());
