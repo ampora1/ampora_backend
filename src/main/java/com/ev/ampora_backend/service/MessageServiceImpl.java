@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class MessageServiceImpl implements MessageService{
+
     private  final MessageRepository messageRepository;
     private final UserRepository userRepository;
 
@@ -38,5 +39,14 @@ public class MessageServiceImpl implements MessageService{
                 .subject(requestDto.getSubject())
                 .build();
 
+        Message savedMessage = messageRepository.save(newMessage);
+
+        MessageResponseDto response = MessageResponseDto.builder()
+                .messageId(savedMessage.getMessageId())
+                .senderName(sender.getFullName())
+                .receiverName(receiver.getFullName())
+                .build();
+
+        return response;
     }
 }
