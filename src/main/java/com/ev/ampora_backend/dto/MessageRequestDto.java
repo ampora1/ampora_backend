@@ -11,5 +11,5 @@ public class MessageRequestDto {
     private String senderId;
     private String receiverId;
     private String subject;
-    private String message;
+    private String content;
 }
