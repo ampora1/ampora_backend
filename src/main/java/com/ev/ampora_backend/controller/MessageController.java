@@ -36,4 +36,10 @@ public class MessageController {
         return new ResponseEntity<>(messageService.updateMessageById(messageId,requestDto), HttpStatus.OK);
     }
 
+    @DeleteMapping("/{messageId}")
+    public  ResponseEntity<Void> deleteById(@PathVariable String messageId){
+        messageService.deleteMessage(messageId);
+        return ResponseEntity.noContent().build();
+    }
+
 }

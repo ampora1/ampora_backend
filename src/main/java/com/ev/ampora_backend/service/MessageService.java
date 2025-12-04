@@ -10,4 +10,5 @@ public interface MessageService {
     MessageResponseDto getMessageById(String messageId);
     List<MessageResponseDto> getAllMessages();
     MessageResponseDto updateMessageById(String messageId, MessageRequestDto requestDto);
+    void deleteMessage(String messageId);
 }

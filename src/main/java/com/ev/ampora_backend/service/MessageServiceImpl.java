@@ -82,6 +82,11 @@ public class MessageServiceImpl implements MessageService{
         return mapToDto(updatedMessage) ;
     }
 
+    @Override
+    public void deleteMessage(String messageId) {
+        messageRepository.deleteById(messageId);
+    }
+
     private MessageResponseDto mapToDto(Message message){
 
         return MessageResponseDto.builder()
