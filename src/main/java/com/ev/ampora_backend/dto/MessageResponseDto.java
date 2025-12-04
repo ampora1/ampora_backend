@@ -10,6 +10,8 @@ import lombok.*;
 @Builder
 public class MessageResponseDto {
     private String messageId;
+    private String subject;
+    private  String content;
     private String senderName;
     private  String receiverName;
 }

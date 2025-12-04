@@ -5,4 +5,6 @@ import com.ev.ampora_backend.dto.MessageResponseDto;
 
 public interface MessageService {
     MessageResponseDto sendMessage(MessageRequestDto requestDto);
+    MessageResponseDto getMessageById(String messageId);
+
 }

@@ -9,6 +9,7 @@ import com.ev.ampora_backend.repository.MessageRepository;
 import com.ev.ampora_backend.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -48,5 +49,20 @@ public class MessageServiceImpl implements MessageService{
                 .build();
 
         return response;
+    }
+
+    @Override
+    public MessageResponseDto getMessageById(String messageId) {
+        Message message = messageRepository.findById(messageId)
+                .orElseThrow(()-> new EntityNotFoundException("Message Not Found"));
+
+        MessageResponseDto responseDto = MessageResponseDto.builder()
+                .messageId(message.getMessageId())
+                .senderName(message.getSender().getFullName())
+                .receiverName(message.getReceiver().getFullName())
+                .subject(message.getSubject())
+                .content(message.getContent())
+                .build();
+        return responseDto;
     }
 }
