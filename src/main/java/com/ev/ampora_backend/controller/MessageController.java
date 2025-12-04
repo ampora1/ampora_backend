@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("api/message")
 @RequiredArgsConstructor
@@ -24,4 +26,8 @@ public class MessageController {
         return  new ResponseEntity<>(messageService.getMessageById(messageId),HttpStatus.OK);
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<List<MessageResponseDto>> getAllMessages(){
+        return new ResponseEntity<>(messageService.getAllMessages(), HttpStatus.OK);
+    }
 }

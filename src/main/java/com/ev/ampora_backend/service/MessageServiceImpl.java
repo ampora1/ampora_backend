@@ -12,6 +12,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class MessageServiceImpl implements MessageService{
@@ -21,9 +24,9 @@ public class MessageServiceImpl implements MessageService{
 
     @Override
     public MessageResponseDto sendMessage(MessageRequestDto requestDto) {
-        User sender = userRepository.findByUserId(requestDto.getSenderId()).orElseThrow(() -> new EntityNotFoundException("Sender not found"));
+        User sender = userRepository.findById(requestDto.getSenderId()).orElseThrow(() -> new EntityNotFoundException("Sender not found"));
 
-        User receiver = userRepository.findByUserId(requestDto.getReceiverId()).orElseThrow(() -> new EntityNotFoundException("Receiver not found"));
+        User receiver = userRepository.findById(requestDto.getReceiverId()).orElseThrow(() -> new EntityNotFoundException("Receiver not found"));
 
         if(!sender.getRole().equals(Role.OPERATOR)){
             throw new IllegalArgumentException("Only Operators Can Send Messages");
@@ -46,6 +49,8 @@ public class MessageServiceImpl implements MessageService{
                 .messageId(savedMessage.getMessageId())
                 .senderName(sender.getFullName())
                 .receiverName(receiver.getFullName())
+                .subject(savedMessage.getSubject())
+                .content(savedMessage.getContent())
                 .build();
 
         return response;
@@ -64,5 +69,24 @@ public class MessageServiceImpl implements MessageService{
                 .content(message.getContent())
                 .build();
         return responseDto;
+    }
+
+    @Override
+    public List<MessageResponseDto> getAllMessages() {
+        List<Message> messageList = messageRepository.findAll();
+
+        List<MessageResponseDto> messageResponseDtoList =new ArrayList<>();
+
+        for (Message message:messageList){
+            MessageResponseDto responseDto = MessageResponseDto.builder()
+                    .messageId(message.getMessageId())
+                    .senderName(message.getSender().getFullName())
+                    .receiverName(message.getReceiver().getFullName())
+                    .subject(message.getSubject())
+                    .content(message.getContent())
+                    .build();
+            messageResponseDtoList.add(responseDto);
+        }
+        return messageResponseDtoList;
     }
 }
