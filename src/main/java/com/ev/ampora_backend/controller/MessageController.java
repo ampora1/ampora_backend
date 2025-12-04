@@ -30,4 +30,10 @@ public class MessageController {
     public ResponseEntity<List<MessageResponseDto>> getAllMessages(){
         return new ResponseEntity<>(messageService.getAllMessages(), HttpStatus.OK);
     }
+
+    @PutMapping("/{messageId}")
+    public ResponseEntity<MessageResponseDto> updateMessage(@PathVariable String messageId,@RequestBody MessageRequestDto requestDto){
+        return new ResponseEntity<>(messageService.updateMessageById(messageId,requestDto), HttpStatus.OK);
+    }
+
 }

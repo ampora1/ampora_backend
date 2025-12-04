@@ -45,15 +45,7 @@ public class MessageServiceImpl implements MessageService{
 
         Message savedMessage = messageRepository.save(newMessage);
 
-        MessageResponseDto response = MessageResponseDto.builder()
-                .messageId(savedMessage.getMessageId())
-                .senderName(sender.getFullName())
-                .receiverName(receiver.getFullName())
-                .subject(savedMessage.getSubject())
-                .content(savedMessage.getContent())
-                .build();
-
-        return response;
+        return mapToDto(savedMessage);
     }
 
     @Override
@@ -61,14 +53,7 @@ public class MessageServiceImpl implements MessageService{
         Message message = messageRepository.findById(messageId)
                 .orElseThrow(()-> new EntityNotFoundException("Message Not Found"));
 
-        MessageResponseDto responseDto = MessageResponseDto.builder()
-                .messageId(message.getMessageId())
-                .senderName(message.getSender().getFullName())
-                .receiverName(message.getReceiver().getFullName())
-                .subject(message.getSubject())
-                .content(message.getContent())
-                .build();
-        return responseDto;
+        return mapToDto( message );
     }
 
     @Override
@@ -78,15 +63,33 @@ public class MessageServiceImpl implements MessageService{
         List<MessageResponseDto> messageResponseDtoList =new ArrayList<>();
 
         for (Message message:messageList){
-            MessageResponseDto responseDto = MessageResponseDto.builder()
-                    .messageId(message.getMessageId())
-                    .senderName(message.getSender().getFullName())
-                    .receiverName(message.getReceiver().getFullName())
-                    .subject(message.getSubject())
-                    .content(message.getContent())
-                    .build();
+            MessageResponseDto responseDto = mapToDto(message);
+
             messageResponseDtoList.add(responseDto);
         }
         return messageResponseDtoList;
+    }
+
+    @Override
+    public MessageResponseDto updateMessageById(String messageId, MessageRequestDto requestDto) {
+        Message existingMessage = messageRepository.findById(messageId)
+                .orElseThrow(()->new EntityNotFoundException("Message not found."));
+
+        existingMessage.setSubject(requestDto.getSubject());
+        existingMessage.setContent(requestDto.getContent());
+
+        Message updatedMessage = messageRepository.save(existingMessage);
+        return mapToDto(updatedMessage) ;
+    }
+
+    private MessageResponseDto mapToDto(Message message){
+
+        return MessageResponseDto.builder()
+                .messageId(message.getMessageId())
+                .subject(message.getSubject())
+                .content(message.getContent())
+                .senderName(message.getSender().getFullName())
+                .receiverName(message.getReceiver().getFullName())
+                .build();
     }
 }
