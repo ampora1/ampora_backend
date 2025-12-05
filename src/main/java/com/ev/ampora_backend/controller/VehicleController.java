@@ -1,6 +1,7 @@
 package com.ev.ampora_backend.controller;
 
 import com.ev.ampora_backend.dto.VehicleDTO;
+import com.ev.ampora_backend.entity.Vehicle;
 import com.ev.ampora_backend.service.VehicleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,11 @@ public class VehicleController {
   @GetMapping("/{id}")
    public  ResponseEntity<VehicleDTO> getVehicleById(@PathVariable String id){
     return ResponseEntity.ok(vehicleService.getVehicleById(id));
+  }
+  
+  @GetMapping("/user/{id}")
+  public VehicleDTO getVehicleByUserId(@PathVariable String id){
+    return vehicleService.getVehicleByUserId(id);
   }
 
   @PutMapping("/{id}")

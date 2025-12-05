@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.security.Key;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -85,6 +86,18 @@ public class UserService {
                 .toList();
     }
 
+    public UserDTO updateUser(String id, UserDTO user1) {
+        User user = userRepository.findById(id).orElseThrow(() ->new RuntimeException("station not found"));
+        user.setFullName(user1.getFullName());
+        user.setEmail(user1.getEmail());
+        user.setPhone(user1.getPhone());
+        user.setAddress(user1.getAddress());
+        userRepository.save(user);
+        return mapToDto(user);
+
+
+    }
+
 
     public UserDTO getUserById(String id) {
         User user = userRepository.findById(id)
@@ -121,6 +134,7 @@ public class UserService {
                 user.getFullName(),
                 user.getEmail(),
                 user.getPhone(),
+                user.getAddress(),
                 user.getRole().name()
         );
     }

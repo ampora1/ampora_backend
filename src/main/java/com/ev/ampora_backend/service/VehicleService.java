@@ -38,6 +38,11 @@ public class VehicleService {
      return VehicleDTO.builder().vehicleId(v.getVehicleId()).model(v.getModel()).batteryCapacityKwh(v.getBatteryCapacityKwh()).batteryCapacityKwh(v.getBatteryCapacityKwh()).connectorType(v.getConnectorType()).userId(v.getUser().getUserId()).build();
   }
 
+  public VehicleDTO getVehicleByUserId(String userId){
+      Vehicle v =vehicleRepo.findVehicleByUser(userRepo.findById(userId).orElseThrow(() -> new RuntimeException("Vehicle not find")));
+      return VehicleDTO.builder().vehicleId(v.getVehicleId()).model(v.getModel()).batteryCapacityKwh(v.getBatteryCapacityKwh()).batteryCapacityKwh(v.getBatteryCapacityKwh()).connectorType(v.getConnectorType()).userId(v.getUser().getUserId()).build();
+  }
+
   public void deleteVehicle(String id){
       if(!vehicleRepo.existsById(id)){
           throw new RuntimeException("Vehicle not found");
