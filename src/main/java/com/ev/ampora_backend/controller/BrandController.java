@@ -21,4 +21,9 @@ public class BrandController {
     public BrandDTO createBrand(@RequestBody BrandDTO brandDTO) {
         return brandService.addBrand(brandDTO);
     }
+
+    @PutMapping("/{id}")
+    public BrandDTO updateBrand(@PathVariable Long id, @RequestBody BrandDTO brandDTO) {
+        return brandService.updateBrand(id,brandDTO);
+    }
 }

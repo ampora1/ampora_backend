@@ -3,13 +3,10 @@ package com.ev.ampora_backend.service;
 import com.ev.ampora_backend.dto.BrandDTO;
 import com.ev.ampora_backend.entity.Brand;
 import com.ev.ampora_backend.repository.BrandRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-
-import static java.util.stream.Collectors.toList;
+import java.util.Optional;
 
 @Service
 
@@ -36,4 +33,15 @@ public class BrandService {
         brandRepository.save(brand);
         return BrandDTO.builder().brand_id(brand.getId()).brand_name(brand.getName()).build();
     }
+
+    public BrandDTO updateBrand(Long id,BrandDTO brandDTO) {
+        Optional<Brand> brand = brandRepository.findById(id);
+
+        brand.get().setName(brandDTO.getBrand_name());
+        brandRepository.save(brand.get());
+
+        return BrandDTO.builder().brand_id(brand.get().getId()).brand_name(brand.get().getName()).build();
+    }
+
+
 }
