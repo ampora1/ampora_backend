@@ -2,6 +2,7 @@ package com.ev.ampora_backend.controller;
 
 import com.ev.ampora_backend.dto.VehicleDTO;
 import com.ev.ampora_backend.entity.Vehicle;
+import com.ev.ampora_backend.repository.VehicleRepository;
 import com.ev.ampora_backend.service.VehicleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,5 +46,10 @@ public class VehicleController {
   public  ResponseEntity<String> deleteVehicle(@PathVariable String id){
     vehicleService.deleteVehicle(id);
     return  ResponseEntity.ok("Delete vehicle successfully");
+  }
+
+  @GetMapping("/user/{userId}")
+  public  ResponseEntity<List<VehicleDTO>> getUserVehicle(@PathVariable String userId){
+    return  ResponseEntity.ok(vehicleService.getVehicleByuserId(userId));
   }
 }
