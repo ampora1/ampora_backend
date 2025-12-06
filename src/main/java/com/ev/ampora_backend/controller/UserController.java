@@ -10,7 +10,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:5173")
 public class UserController {
 
     private final UserService userService;
@@ -45,6 +45,11 @@ public class UserController {
 //        return ResponseEntity.ok(userService.updateUser(id, userDto));
 //    }
 
+    @PutMapping("/{id}")
+    public UserDTO updateUser(@PathVariable String id, @RequestBody UserDTO userDTO) {
+        return  userService.updateUser(id, userDTO);
+
+    }
 
     @DeleteMapping("/{id}")
     public String deleteUser(@PathVariable String id) {
