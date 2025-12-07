@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter @Setter
@@ -18,7 +19,7 @@ public class Invoice {
     @JoinColumn(name = "user_id")
     private User user;
 
-    private LocalDate month;
+    private LocalDateTime date;
     private double totalKwh;
     private double amount;
     private boolean paid;
