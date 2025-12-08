@@ -9,5 +9,5 @@ public class ModelDTO {
     private Long model_id;
     private String model_name;
     private Long brand_id;
-    private String brand_name;
+
 }

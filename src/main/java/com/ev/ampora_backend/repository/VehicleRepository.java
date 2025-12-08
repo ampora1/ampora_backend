@@ -8,4 +8,6 @@ import java.util.List;
 
 public interface VehicleRepository extends JpaRepository<Vehicle,String> {
     List<Vehicle> findByUser_UserId(String userId);
+
+
 }
