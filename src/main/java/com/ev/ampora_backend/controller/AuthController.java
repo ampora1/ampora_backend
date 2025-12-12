@@ -1,9 +1,6 @@
 package com.ev.ampora_backend.controller;
 
-import com.ev.ampora_backend.dto.LoginRequest;
-import com.ev.ampora_backend.dto.RegisterRequest;
-import com.ev.ampora_backend.dto.UserDTO;
-import com.ev.ampora_backend.dto.UserResponse;
+import com.ev.ampora_backend.dto.*;
 import com.ev.ampora_backend.entity.User;
 import com.ev.ampora_backend.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:5173")
 public class AuthController {
 
     private final UserService userService;
@@ -23,14 +20,8 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public UserResponse login(@RequestBody LoginRequest request) {
-        User user = userService.login(request.getEmail(), request.getPassword());
-        return new UserResponse(
-                user.getUserId().toString(),
-                user.getFullName(),
-                user.getEmail(),
-                user.getPhone(),
-                user.getRole().name()
-        );
+    public AuthResponse login(@RequestBody LoginRequest request) {
+        AuthResponse resp = userService.login(request.getEmail(), request.getPassword());
+        return resp;
     }
 }

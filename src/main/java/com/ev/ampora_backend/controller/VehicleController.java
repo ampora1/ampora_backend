@@ -1,6 +1,7 @@
 package com.ev.ampora_backend.controller;
 
 import com.ev.ampora_backend.dto.VehicleDTO;
+import com.ev.ampora_backend.entity.Vehicle;
 import com.ev.ampora_backend.repository.VehicleRepository;
 import com.ev.ampora_backend.service.VehicleService;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,8 @@ public class VehicleController {
    public  ResponseEntity<VehicleDTO> getVehicleById(@PathVariable String id){
     return ResponseEntity.ok(vehicleService.getVehicleById(id));
   }
+  
+
 
   @PutMapping("/{id}")
   public ResponseEntity<VehicleDTO> updateVehicle(@PathVariable String id,@RequestBody VehicleDTO dto){

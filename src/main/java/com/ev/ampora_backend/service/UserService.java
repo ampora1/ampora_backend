@@ -1,16 +1,24 @@
 package com.ev.ampora_backend.service;
 
+import com.ev.ampora_backend.dto.AuthResponse;
 import com.ev.ampora_backend.dto.RegisterRequest;
 import com.ev.ampora_backend.dto.UserDTO;
 import com.ev.ampora_backend.entity.Role;
 import com.ev.ampora_backend.entity.User;
 import com.ev.ampora_backend.exception.ResourceNotFoundException;
 import com.ev.ampora_backend.repository.UserRepository;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Encoders;
+import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.Key;
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -34,7 +42,7 @@ public class UserService {
                 .email(request.getEmail())
                 .phone(request.getPhone())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.USER)
+                .role(Role.valueOf(request.getRole().trim().toUpperCase()))
                 .build();
 
         userRepository.save(user);
@@ -43,7 +51,7 @@ public class UserService {
     }
 
 
-    public User login(String email, String password) {
+    public AuthResponse login(String email, String password) {
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -51,8 +59,23 @@ public class UserService {
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new RuntimeException("Invalid password");
         }
+        Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+        String encodedKey = Encoders.BASE64.encode(key.getEncoded());
 
-        return user;
+        String token = Jwts.builder()
+                .setSubject(email)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 86400000))  // 1 day
+                .signWith(SignatureAlgorithm.HS256, encodedKey)
+                .compact();
+
+
+        AuthResponse response = new AuthResponse();
+
+        response.setToken(token);
+
+
+        return response;
     }
 
 
@@ -61,6 +84,18 @@ public class UserService {
                 .stream()
                 .map(this::mapToDto)
                 .toList();
+    }
+
+    public UserDTO updateUser(String id, UserDTO user1) {
+        User user = userRepository.findById(id).orElseThrow(() ->new RuntimeException("station not found"));
+        user.setFullName(user1.getFullName());
+        user.setEmail(user1.getEmail());
+        user.setPhone(user1.getPhone());
+        user.setAddress(user1.getAddress());
+        userRepository.save(user);
+        return mapToDto(user);
+
+
     }
 
 
@@ -99,6 +134,7 @@ public class UserService {
                 user.getFullName(),
                 user.getEmail(),
                 user.getPhone(),
+                user.getAddress(),
                 user.getRole().name()
         );
     }
