@@ -4,7 +4,7 @@ pipeline {
     environment {
         IMAGE_NAME = "numidu/ampora_backend"
         VM_USER = "dnumidu"
-        VM_IP = "34.44.230.107"
+        VM_IP = "136.119.14.13"
     }
 
     stages {
@@ -50,8 +50,8 @@ pipeline {
                         ssh -o StrictHostKeyChecking=no $VM_USER@$VM_IP '
                             mkdir -p ~/app
                             cd ~/app
-                            export SPRING_DATASOURCE_PASSWORD=$DB_PASSWORD
-                            export GOOGLE_API_KEY=$GOOGLE_API_KEY
+                            echo "DB_PASSWORD=$DB_PASSWORD" > .env
+                            echo "GOOGLE_API_KEY=$GOOGLE_API_KEY" >> .env
                             docker compose pull
                             docker compose down
                             docker compose up -d
