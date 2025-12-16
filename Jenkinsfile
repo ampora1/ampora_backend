@@ -5,6 +5,7 @@ pipeline {
         IMAGE_NAME = "numidu/ampora_backend"
         VM_USER = "dnumidu"
         VM_IP = "136.119.14.13"
+        PRIVATE_KEY_PATH = "${HOME}/.ssh/ampora_gcp_key" // path to your private key on Jenkins agent
     }
 
     stages {
@@ -18,7 +19,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t $IMAGE_NAME:latest .'
+                sh "docker build -t ${IMAGE_NAME}:latest ."
             }
         }
 
@@ -31,10 +32,10 @@ pipeline {
                         passwordVariable: 'DOCKER_PASS'
                     )
                 ]) {
-                    sh '''
+                    sh """
                         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                        docker push $IMAGE_NAME:latest
-                    '''
+                        docker push ${IMAGE_NAME}:latest
+                    """
                 }
             }
         }
@@ -45,19 +46,16 @@ pipeline {
                     string(credentialsId: 'db-password', variable: 'DB_PASSWORD'),
                     string(credentialsId: 'google-api-key', variable: 'GOOGLE_API_KEY')
                 ]) {
-                    sshagent(['gcp_vm_key']) {
-                        sh """
-                        ssh -o StrictHostKeyChecking=no $VM_USER@$VM_IP '
-                            mkdir -p ~/app
-                            cd ~/app
-                            echo "DB_PASSWORD=$DB_PASSWORD" > .env
-                            echo "GOOGLE_API_KEY=$GOOGLE_API_KEY" >> .env
-                            docker compose pull
-                            docker compose down
-                            docker compose up -d
-                        '
-                        """
-                    }
+                    sh """
+ssh -i ${PRIVATE_KEY_PATH} -o StrictHostKeyChecking=no ${VM_USER}@${VM_IP} '
+cd ~/app
+export SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+export GOOGLE_API_KEY=${GOOGLE_API_KEY}
+docker compose pull
+docker compose down
+docker compose up -d
+'
+                    """
                 }
             }
         }
