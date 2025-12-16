@@ -9,26 +9,28 @@ pipeline {
 
     stages {
 
-        stage('Checkout') {
+        stage('Checkout Source') {
             steps {
                 git branch: 'numidu',
-                    url: 'https://github.com/mari75a/ampora_backend.git'
+                    url: 'https://github.com/Numidu/BackendDeploye.git'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh "docker build -t $IMAGE_NAME:latest ."
+                sh 'docker build -t $IMAGE_NAME:latest .'
             }
         }
 
-        stage('Push to Docker Hub') {
+        stage('Push Image to Docker Hub') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )
+                ]) {
                     sh '''
                         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
                         docker push $IMAGE_NAME:latest
@@ -39,15 +41,23 @@ pipeline {
 
         stage('Deploy to GCP VM') {
             steps {
-                sshagent(['gcp_vm_key']) {
-                    sh """
-                    ssh -o StrictHostKeyChecking=no $VM_USER@$VM_IP '
-                        cd ~/app || mkdir -p ~/app && cd ~/app
-                        docker compose pull
-                        docker compose down
-                        docker compose up -d
-                    '
-                    """
+                withCredentials([
+                    string(credentialsId: 'db-password', variable: 'DB_PASSWORD'),
+                    string(credentialsId: 'google-api-key', variable: 'GOOGLE_API_KEY')
+                ]) {
+                    sshagent(['gcp_vm_key']) {
+                        sh """
+                        ssh -o StrictHostKeyChecking=no $VM_USER@$VM_IP '
+                            mkdir -p ~/app
+                            cd ~/app
+                            export SPRING_DATASOURCE_PASSWORD=$DB_PASSWORD
+                            export GOOGLE_API_KEY=$GOOGLE_API_KEY
+                            docker compose pull
+                            docker compose down
+                            docker compose up -d
+                        '
+                        """
+                    }
                 }
             }
         }
