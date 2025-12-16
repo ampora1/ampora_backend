@@ -47,13 +47,13 @@ pipeline {
                     string(credentialsId: 'google-api-key', variable: 'GOOGLE_API_KEY')
                 ]) {
                     sh """
-ssh -i ${PRIVATE_KEY_PATH} -o StrictHostKeyChecking=no ${VM_USER}@${VM_IP} '
-cd ~/app
-export SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
-export GOOGLE_API_KEY=${GOOGLE_API_KEY}
-docker compose pull
-docker compose down
-docker compose up -d
+                        ssh -i $HOME/.ssh/ampora_gcp_key -o StrictHostKeyChecking=no ${VM_USER}@${VM_IP} '
+                        cd ~/app
+                        export SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+                        export GOOGLE_API_KEY=${GOOGLE_API_KEY}
+                        docker compose pull
+                        docker compose down
+                        docker compose up -d
 '
                     """
                 }
