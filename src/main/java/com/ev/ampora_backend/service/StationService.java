@@ -6,9 +6,13 @@ import com.ev.ampora_backend.entity.Station;
 import com.ev.ampora_backend.entity.User;
 import com.ev.ampora_backend.repository.StationRepository;
 import com.ev.ampora_backend.repository.UserRepository;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
+import java.io.InputStream;
 import java.util.List;
 
 @Service
@@ -16,6 +20,7 @@ import java.util.List;
 public class StationService {
     private final StationRepository stationRepository;
     private  final UserRepository userRepository;
+    private final  ObjectMapper om;
 
     public StationResponseDTO create(StationRequestDTO dto){
         User operator = userRepository.findById(dto.getOperatorId()).orElse(null);
@@ -57,6 +62,11 @@ public class StationService {
 
     private StationResponseDTO toDTO(Station s){
         return StationResponseDTO.builder().stationId(s.getStationId()).name(s.getName()).address(s.getAddress()).latitude(s.getLatitude()).longitude(s.getLongitude()).status(s.getStatus()).build();
+    }
+
+    public List<Station> loadAllFromJson() throws Exception {
+        InputStream is = new ClassPathResource("station.json").getInputStream();
+        return om.readValue(is, new TypeReference<List<Station>>() {});
     }
 
 
