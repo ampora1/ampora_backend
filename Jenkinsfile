@@ -2,28 +2,19 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "numidu/ampora_backend"
-        VM_USER = "dnumidu"
-        VM_IP = "136.119.14.13"
-        PRIVATE_KEY_PATH = "${HOME}/.ssh/ampora_gcp_key"
+        DOCKERHUB_USER = 'numidu'
     }
 
     stages {
 
-        stage('Checkout Source') {
+        stage('Clone Repository') {
             steps {
-                git branch: 'numidu',
-                    url: 'https://github.com/mari75a/ampora_backend.git'
+                git branch: 'main',
+                    url: 'https://github.com/Numidu/BackendDeploye.git'
             }
         }
 
-        stage('Build Docker Image') {
-            steps {
-                sh "docker build -t ${IMAGE_NAME}:latest ."
-            }
-        }
-
-        stage('Push Image to Docker Hub') {
+        stage('Build Backend Image') {
             steps {
                 withCredentials([
                     usernamePassword(
@@ -32,31 +23,46 @@ pipeline {
                         passwordVariable: 'DOCKER_PASS'
                     )
                 ]) {
-                    sh """
+                    sh '''
                         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                        docker push ${IMAGE_NAME}:latest
-                    """
+                        cd userservice
+                        docker build -t $DOCKER_USER/backend:latest .
+                    '''
                 }
+            }
+        }
+
+        stage('Push Image to Docker Hub') {
+            steps {
+                sh '''
+                    docker push numidu/backend:latest
+                '''
             }
         }
 
         stage('Deploy to GCP VM') {
             steps {
-                withCredentials([
-                    string(credentialsId: 'db-password', variable: 'DB_PASSWORD'),
-                    string(credentialsId: 'google-api-key', variable: 'GOOGLE_API_KEY')
-                ]) {
-                    sh """
-                        ssh -i ${PRIVATE_KEY_PATH} -o StrictHostKeyChecking=no ${VM_USER}@${VM_IP} << 'EOF'
-                        cd ~/app
-                        export SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
-                        export GOOGLE_API_KEY=${GOOGLE_API_KEY}
+                sshagent(['gcp_vm_key']) {
+                    withCredentials([
+                        string(credentialsId: 'db-password', variable: 'DB_PASSWORD'),
+                        string(credentialsId: 'google-api-key', variable: 'GOOGLE_API_KEY')
+                    ]) {
+                        sh '''
+                            ssh -o StrictHostKeyChecking=no ampora-jenkins@104.197.153.74 << EOF
+                            set -e
 
-                        docker compose pull
-                        docker compose down
-                        docker compose up -d
-                        EOF
-                    """
+                            mkdir -p ~/app
+                            cd ~/app
+
+                            export SPRING_DATASOURCE_PASSWORD="$DB_PASSWORD"
+                            export GOOGLE_API_KEY="$GOOGLE_API_KEY"
+
+                            docker compose pull
+                            docker compose down || true
+                            docker compose up -d
+                            EOF
+                        '''
+                    }
                 }
             }
         }
