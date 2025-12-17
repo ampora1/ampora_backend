@@ -5,7 +5,7 @@ pipeline {
         IMAGE_NAME = "numidu/ampora_backend"
         VM_USER = "dnumidu"
         VM_IP = "136.119.14.13"
-        PRIVATE_KEY_PATH = "${HOME}/.ssh/ampora_gcp_key" // path to your private key on Jenkins agent
+        PRIVATE_KEY_PATH = "${HOME}/.ssh/ampora_gcp_key"
     }
 
     stages {
@@ -47,14 +47,15 @@ pipeline {
                     string(credentialsId: 'google-api-key', variable: 'GOOGLE_API_KEY')
                 ]) {
                     sh """
-                        ssh -i $HOME/.ssh/ampora_gcp_key -o StrictHostKeyChecking=no ${VM_USER}@${VM_IP} '
+                        ssh -i ${PRIVATE_KEY_PATH} -o StrictHostKeyChecking=no ${VM_USER}@${VM_IP} << 'EOF'
                         cd ~/app
                         export SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
                         export GOOGLE_API_KEY=${GOOGLE_API_KEY}
+
                         docker compose pull
                         docker compose down
                         docker compose up -d
-'
+                        EOF
                     """
                 }
             }
