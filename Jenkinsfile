@@ -4,7 +4,7 @@ pipeline {
     environment {
         IMAGE_NAME = "numidu/ampora_backend"
         VM_USER = "ampora-jenkins"
-        VM_IP = "104.197.153.74"
+        VM_IP   = "104.197.153.74"
     }
 
     stages {
@@ -16,31 +16,18 @@ pipeline {
             }
         }
 
-        /* ===============================
-           BUILD JAR (NO DOCKER HERE)
-           =============================== */
         stage('Build JAR') {
             steps {
-                sh '''
-                    mvn clean package -DskipTests
-                '''
+                sh 'mvn clean package -DskipTests'
             }
         }
 
-        /* ===============================
-           BUILD DOCKER IMAGE
-           =============================== */
         stage('Build Docker Image') {
             steps {
-                sh '''
-                    docker build -t numidu/ampora_backend:latest .
-                '''
+                sh 'docker build -t numidu/ampora_backend:latest .'
             }
         }
 
-        /* ===============================
-           PUSH IMAGE
-           =============================== */
         stage('Push Image to Docker Hub') {
             steps {
                 withCredentials([
@@ -58,30 +45,30 @@ pipeline {
             }
         }
 
-        /* ===============================
-           DEPLOY TO GCP VM
-           =============================== */
         stage('Deploy to GCP VM') {
             steps {
-                sshagent(['gcp_vm_key']) {
-                    withCredentials([
-                        string(credentialsId: 'google-api-key', variable: 'GOOGLE_API_KEY')
-                    ]) {
-                        sh '''
-                            ssh -o StrictHostKeyChecking=no ampora-jenkins@104.197.153.74 << EOF
-                            set -e
+                withCredentials([
+                    sshUserPrivateKey(
+                        credentialsId: 'gcp_vm_key',
+                        keyFileVariable: 'SSH_KEY',
+                        usernameVariable: 'SSH_USER'
+                    ),
+                    string(credentialsId: 'google-api-key', variable: 'GOOGLE_API_KEY')
+                ]) {
+                    sh '''
+                        ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no "$SSH_USER@104.197.153.74" << EOF
+                        set -e
 
-                            mkdir -p ~/app
-                            cd ~/app
+                        mkdir -p ~/app
+                        cd ~/app
 
-                            export GOOGLE_API_KEY="$GOOGLE_API_KEY"
+                        export GOOGLE_API_KEY="$GOOGLE_API_KEY"
 
-                            docker compose pull
-                            docker compose down || true
-                            docker compose up -d
-                            EOF
-                        '''
-                    }
+                        docker compose pull
+                        docker compose down || true
+                        docker compose up -d
+                        EOF
+                    '''
                 }
             }
         }
