@@ -2,19 +2,21 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_USER = 'numidu'
+        IMAGE_NAME = "numidu/ampora_backend"
+        VM_USER = "ampora-jenkins"
+        VM_IP = "104.197.153.74"
     }
 
     stages {
 
-        stage('Clone Repository') {
+        stage('Checkout Source') {
             steps {
                 git branch: 'main',
                     url: 'https://github.com/Numidu/BackendDeploye.git'
             }
         }
 
-        stage('Build Backend Image') {
+        stage('Build Docker Image') {
             steps {
                 withCredentials([
                     usernamePassword(
@@ -25,8 +27,7 @@ pipeline {
                 ]) {
                     sh '''
                         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                        cd userservice
-                        docker build -t $DOCKER_USER/backend:latest .
+                        docker build -t numidu/ampora_backend:latest .
                     '''
                 }
             }
@@ -35,7 +36,7 @@ pipeline {
         stage('Push Image to Docker Hub') {
             steps {
                 sh '''
-                    docker push numidu/backend:latest
+                    docker push numidu/ampora_backend:latest
                 '''
             }
         }
@@ -44,7 +45,6 @@ pipeline {
             steps {
                 sshagent(['gcp_vm_key']) {
                     withCredentials([
-                        string(credentialsId: 'db-password', variable: 'DB_PASSWORD'),
                         string(credentialsId: 'google-api-key', variable: 'GOOGLE_API_KEY')
                     ]) {
                         sh '''
@@ -54,7 +54,6 @@ pipeline {
                             mkdir -p ~/app
                             cd ~/app
 
-                            export SPRING_DATASOURCE_PASSWORD="$DB_PASSWORD"
                             export GOOGLE_API_KEY="$GOOGLE_API_KEY"
 
                             docker compose pull
