@@ -3,8 +3,8 @@ pipeline {
 
     environment {
         IMAGE_NAME = "numidu/ampora_backend"
-        VM_USER = "ampora-jenkins"   // ⚠️ use correct SSH username
-        VM_IP   = "104.197.153.74"   // ⚠️ new VM IP
+        VM_USER = "ampora-jenkins"
+        VM_IP = "104.197.153.74"
     }
 
     stages {
@@ -16,12 +16,31 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        /* ===============================
+           BUILD JAR (NO DOCKER HERE)
+           =============================== */
+        stage('Build JAR') {
             steps {
-                sh 'docker build -t numidu/ampora_backend:latest .'
+                sh '''
+                    mvn clean package -DskipTests
+                '''
             }
         }
 
+        /* ===============================
+           BUILD DOCKER IMAGE
+           =============================== */
+        stage('Build Docker Image') {
+            steps {
+                sh '''
+                    docker build -t numidu/ampora_backend:latest .
+                '''
+            }
+        }
+
+        /* ===============================
+           PUSH IMAGE
+           =============================== */
         stage('Push Image to Docker Hub') {
             steps {
                 withCredentials([
@@ -39,20 +58,22 @@ pipeline {
             }
         }
 
+        /* ===============================
+           DEPLOY TO GCP VM
+           =============================== */
         stage('Deploy to GCP VM') {
             steps {
                 sshagent(['gcp_vm_key']) {
                     withCredentials([
-                        string(credentialsId: 'db-password', variable: 'DB_PASSWORD'),
                         string(credentialsId: 'google-api-key', variable: 'GOOGLE_API_KEY')
                     ]) {
                         sh '''
                             ssh -o StrictHostKeyChecking=no ampora-jenkins@104.197.153.74 << EOF
                             set -e
 
+                            mkdir -p ~/app
                             cd ~/app
 
-                            export SPRING_DATASOURCE_PASSWORD="$DB_PASSWORD"
                             export GOOGLE_API_KEY="$GOOGLE_API_KEY"
 
                             docker compose pull
