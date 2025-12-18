@@ -20,7 +20,7 @@ public  class ChargerServiceImpl implements  ChargerService{
 
 
     private ChargerResponseDTO toresponse(Charger c){
-        return ChargerResponseDTO.builder().chargerID(c.getChargerId()).type(c.getType()).powerKw(c.getPowerKw()).status(c.getStatus()).stationName(c.getStation() != null ? c.getStation().getName():null).build();
+        return ChargerResponseDTO.builder().chargerID(c.getChargerId()).type(c.getType()).powerKw(c.getPowerKw()).status(c.getStatus()).stationName(c.getStation() != null ? c.getStation().getStationId():null).build();
     }
 
     @Override

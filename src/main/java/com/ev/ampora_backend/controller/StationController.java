@@ -17,8 +17,8 @@ public class StationController {
     private final StationService stationService;
 
     @PostMapping
-    public ResponseEntity<StationResponseDTO> create(@RequestBody StationRequestDTO dto){
-        return ResponseEntity.ok(stationService.create(dto));
+    public boolean create(@RequestBody StationRequestDTO dto){
+        return stationService.create(dto);
     }
 
     @GetMapping
