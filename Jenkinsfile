@@ -3,8 +3,8 @@ pipeline {
 
     environment {
         IMAGE_NAME = "numidu/ampora_backend"
-        VM_USER = "ampora-jenkins"
-        VM_IP   = "104.197.153.74"
+        VM_USER    = "dnumidu"
+        VM_IP      = "104.197.153.74"
     }
 
     stages {
@@ -24,7 +24,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t numidu/ampora_backend:latest .'
+                sh 'docker build -t ${IMAGE_NAME}:latest .'
             }
         }
 
@@ -39,7 +39,7 @@ pipeline {
                 ]) {
                     sh '''
                         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                        docker push numidu/ampora_backend:latest
+                        docker push ${IMAGE_NAME}:latest
                     '''
                 }
             }
@@ -55,22 +55,30 @@ pipeline {
                     ),
                     string(credentialsId: 'google-api-key', variable: 'GOOGLE_API_KEY')
                 ]) {
-                    sh '''
-                        ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no "$SSH_USER@104.197.153.74" << EOF
-                        set -e
+                    sh """
+                        ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no "$VM_USER@$VM_IP" '
+                            set -e
+                            mkdir -p ~/app
+                            cd ~/app
 
-                        mkdir -p ~/app
-                        cd ~/app
+                            export GOOGLE_API_KEY=${GOOGLE_API_KEY}
 
-                        export GOOGLE_API_KEY="$GOOGLE_API_KEY"
-
-                        docker compose pull
-                        docker compose down || true
-                        docker compose up -d
-                        EOF
-                    '''
+                            docker compose pull
+                            docker compose down || true
+                            docker compose up -d
+                        '
+                    """
                 }
             }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Deployment successful!"
+        }
+        failure {
+            echo "❌ Deployment failed. Check logs."
         }
     }
 }
