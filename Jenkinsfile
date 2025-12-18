@@ -64,8 +64,7 @@ pipeline {
                             export GOOGLE_API_KEY=${GOOGLE_API_KEY}
 
                             docker compose pull
-                            docker compose down || true
-                            docker compose up -d
+                            docker compose up -d --remove-orphans
                         '
                     """
                 }
