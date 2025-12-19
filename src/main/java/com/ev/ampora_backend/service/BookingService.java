@@ -117,6 +117,8 @@ public class BookingService {
                         .startTime(b.getStartTime().toLocalTime().toString())
                         .endTime(b.getEndTime().toLocalTime().toString())
                         .status(b.getBookingStatus())
+                        .amount(1000)
+                        .ChargerType(b.getCharger().getType())
                         .build()
         ).toList();
     }

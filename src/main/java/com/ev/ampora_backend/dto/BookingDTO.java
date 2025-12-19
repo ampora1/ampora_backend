@@ -19,8 +19,10 @@ public class BookingDTO {
 
     private LocalDate date;
 
-    private String startTime;  // "15:30"
-    private String endTime;    // "16:30"
+    private String startTime;
+    private String endTime;
+    private double amount;
+    private String ChargerType;
 
     private BookingStatus status;
 }

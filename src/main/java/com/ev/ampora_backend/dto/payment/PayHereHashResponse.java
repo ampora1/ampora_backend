@@ -1,4 +1,4 @@
-package com.ev.ampora_backend.dto;
+package com.ev.ampora_backend.dto.payment;
 
 
 
