@@ -73,6 +73,7 @@ public class UserService {
         AuthResponse response = new AuthResponse();
 
         response.setToken(token);
+        response.setUser_id(user.getUserId());
 
 
         return response;

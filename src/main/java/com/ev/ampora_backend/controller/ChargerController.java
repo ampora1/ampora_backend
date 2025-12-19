@@ -13,7 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("api/charger")
 @RequiredArgsConstructor
-@CrossOrigin
+@CrossOrigin(origins = "http://localhost:5173")
 
 public class ChargerController {
     private final ChargerService chargerService;
