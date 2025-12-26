@@ -2,46 +2,53 @@ package com.ev.ampora_backend.service;
 
 import com.ev.ampora_backend.entity.ChargingSession;
 import com.ev.ampora_backend.repository.ChargingSessionRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
 @Service
-@RequiredArgsConstructor
 public class ChargingSessionService {
 
     private final ChargingSessionRepository repo;
+    private ChargingSession activeSession;
 
-    private static final double RATE_PER_KWH = 85.0;
-
-    public ChargingSession startSession() {
-        ChargingSession session = new ChargingSession();
-        session.setStartTime(LocalDateTime.now());
-        session.setStatus("ONGOING");
-        return repo.save(session);
+    public ChargingSessionService(ChargingSessionRepository repo) {
+        this.repo = repo;
     }
 
-    public ChargingSession updateLive(double energy) {
-        ChargingSession session = repo
-                .findFirstByStatus("ONGOING")
-                .orElseGet(this::startSession);
-
-        session.setEnergyKwh(energy);
-        session.setAmountLkr(energy * RATE_PER_KWH);
-        return repo.save(session);
+    // Called when charging starts
+    public void startSession() {
+        activeSession = new ChargingSession(LocalDateTime.now());
+        repo.save(activeSession);
+        System.out.println("⚡ Charging session started");
     }
 
-    public ChargingSession endSession(double energy) {
-        ChargingSession session =
-                repo.findFirstByStatus("ONGOING")
-                        .orElseThrow();
+    // Called continuously (LIVE data)
+    public void updateEnergy(double energy) {
+        if (activeSession == null) return;
+        activeSession.setEnergyKwh(energy);
+        repo.save(activeSession);
+    }
 
-        session.setEnergyKwh(energy);
-        session.setAmountLkr(energy * RATE_PER_KWH);
-        session.setEndTime(LocalDateTime.now());
-        session.setStatus("COMPLETED");
+    // Called once when charging ends
+    public ChargingSession endSession(double energy, double bill) {
+        if (activeSession == null) return null;
 
-        return repo.save(session);
+        activeSession.setEnergyKwh(energy);
+        activeSession.setBillLkr(bill);
+        activeSession.setEndTime(LocalDateTime.now());
+
+        ChargingSession finished = repo.save(activeSession);
+        activeSession = null;
+
+        System.out.println("✅ Charging session saved");
+        return finished;
+    }
+
+    public ChargingSession getLastSession() {
+        return repo.findAll()
+                .stream()
+                .reduce((first, second) -> second)
+                .orElse(null);
     }
 }

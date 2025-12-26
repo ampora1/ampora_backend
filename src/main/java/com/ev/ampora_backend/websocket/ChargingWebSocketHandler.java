@@ -1,46 +1,39 @@
 package com.ev.ampora_backend.websocket;
 
-import com.ev.ampora_backend.service.ChargingSessionService;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.*;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 @Component
-@RequiredArgsConstructor
 public class ChargingWebSocketHandler extends TextWebSocketHandler {
 
-    private final ObjectMapper mapper = new ObjectMapper();
-    private final ChargingSessionService service;
-    private final WebSocketBroadcaster broadcaster;
+    private final ChargingSessionManager sessionManager;
 
-    @Override
-    public void afterConnectionEstablished(WebSocketSession session) {
-        broadcaster.add(session);
+    public ChargingWebSocketHandler(ChargingSessionManager sessionManager) {
+        this.sessionManager = sessionManager;
     }
 
     @Override
-    protected void handleTextMessage(
-            WebSocketSession session, TextMessage message) throws Exception {
+    public void afterConnectionEstablished(WebSocketSession session) {
+        sessionManager.add(session);
+        System.out.println("🟢 WS CONNECTED: " + session.getId());
+    }
 
-        JsonNode json = mapper.readTree(message.getPayload());
-        String type = json.has("type") ? json.get("type").asText() : "LIVE";
+    @Override
+    protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+        System.out.println("📥 FROM ESP32: " + message.getPayload());
 
-        if ("LIVE".equals(type)) {
-            service.updateLive(json.get("energy").asDouble());
+        // 🔥 BROADCAST TO ALL CONNECTED CLIENTS
+        for (WebSocketSession client : sessionManager.getSessions()) {
+            if (client.isOpen()) {
+                client.sendMessage(message);
+            }
         }
-
-        if ("SESSION_END".equals(type)) {
-            service.endSession(json.get("energy").asDouble());
-        }
-
-        broadcaster.broadcast(message.getPayload());
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
-        broadcaster.remove(session);
+        sessionManager.remove(session);
+        System.out.println("🔴 WS CLOSED: " + session.getId());
     }
 }

@@ -1,5 +1,6 @@
 package com.ev.ampora_backend.service;
 
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -9,6 +10,7 @@ import java.security.MessageDigest;
 @Service
 public class PayHereService {
 
+    @Getter
     @Value("${payhere.merchant.id}")
     private String merchantId;
 
@@ -62,7 +64,4 @@ public class PayHereService {
         }
     }
 
-    public String getMerchantId() {
-        return merchantId;
-    }
 }
