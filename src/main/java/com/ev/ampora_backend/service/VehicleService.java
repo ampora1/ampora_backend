@@ -51,6 +51,8 @@ public class VehicleService {
                     v->VehicleDTO.builder()
                             .vehicleId(v.getVehicleId())
                             .model_id(v.getModel().getId())
+                            .brand_name(v.getBrand().getName())
+                            .model_name(v.getModel().getName())
                             .variant(v.getVariant())
                             .plate(v.getPlate())
                             .rangeKm(v.getRangeKm())

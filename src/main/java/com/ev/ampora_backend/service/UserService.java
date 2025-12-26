@@ -40,6 +40,7 @@ public class UserService {
                 .userId(UUID.randomUUID().toString())
                 .fullName(request.getFullName())
                 .email(request.getEmail())
+                .address(request.getAddress())
                 .phone(request.getPhone())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(Role.USER)
@@ -48,6 +49,19 @@ public class UserService {
         userRepository.save(user);
 
         return mapToDto(user);
+    }
+    public User findOrCreateGoogleUser(String email, String fullName) {
+
+        return userRepository.findByEmail(email)
+                .orElseGet(() -> {
+                    User user = new User();
+                    user.setUserId(UUID.randomUUID().toString());
+                    user.setEmail(email);
+                    user.setFullName(fullName);
+                    user.setAuthProvider("GOOGLE");
+//                    user.setEnabled(true);
+                    return userRepository.save(user);
+                });
     }
 
 
@@ -135,8 +149,8 @@ public class UserService {
                 user.getFullName(),
                 user.getEmail(),
                 user.getPhone(),
-                user.getAddress(),
-                user.getRole().name()
+                user.getAddress()
+
         );
     }
 }

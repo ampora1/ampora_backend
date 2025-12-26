@@ -1,33 +1,26 @@
 package com.ev.ampora_backend.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor @Builder
+@Table(name = "charging_session")
+@Getter
+@Setter
 public class ChargingSession {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String sessionId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
-
-    @ManyToOne
-    @JoinColumn(name = "charger_id")
-    private Charger charger;
-
-    private double energyUsedKwh;
-    private double cost;
+    private Double energyKwh;
+    private Double amountLkr;
 
     private LocalDateTime startTime;
     private LocalDateTime endTime;
 
-    @Enumerated(EnumType.STRING)
-    private SessionStatus sessionStatus;
+    private String status; // ONGOING, COMPLETED, PAID
 }

@@ -18,15 +18,19 @@ public class StationMappingService {
     public List<StationDTO> mapStationsToRoute(List<double[]> path, double maxDistanceKm) {
 
         List<Station> stations = stationRepository.findAll();
-
         List<StationDTO> result = new ArrayList<>();
 
         for (Station s : stations) {
-            double[] stationPoint = new double[]{s.getLatitude(), s.getLongitude()};
+            double[] stationPoint = { s.getLatitude(), s.getLongitude() };
 
             double minDist = DistanceUtil.minDistanceToPolylineKm(stationPoint, path);
 
             if (minDist <= maxDistanceKm) {
+
+                double distanceFromStart =
+                        DistanceUtil.distanceFromStartKm(
+                                stationPoint, path
+                        );
 
                 StationDTO dto = new StationDTO();
                 dto.setStationId(s.getStationId());
@@ -34,17 +38,26 @@ public class StationMappingService {
                 dto.setAddress(s.getAddress());
                 dto.setLat(s.getLatitude());
                 dto.setLon(s.getLongitude());
-                dto.setPowerKw(s.getChargers().stream()
-                        .mapToDouble(c -> c.getPowerKw())
-                        .max().orElse(0));
-                dto.setDistanceToRouteKm(Math.round(minDist * 100.0) / 100.0);
+                dto.setPowerKw(
+                        s.getChargers().stream()
+                                .mapToDouble(c -> c.getPowerKw())
+                                .max().orElse(0)
+                );
+                dto.setDistanceToRouteKm(
+                        Math.round(minDist * 100.0) / 100.0
+                );
+                dto.setDistanceFromStartKm(
+                        Math.round(distanceFromStart * 100.0) / 100.0
+                );
 
                 result.add(dto);
             }
         }
 
-        result.sort(Comparator.comparing(StationDTO::getDistanceToRouteKm));
+        // IMPORTANT: sort by distance from START, not distance to route
+        result.sort(Comparator.comparing(StationDTO::getDistanceFromStartKm));
 
         return result;
     }
+
 }
