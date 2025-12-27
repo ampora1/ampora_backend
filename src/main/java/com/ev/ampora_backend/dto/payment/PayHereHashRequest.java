@@ -1,6 +1,5 @@
 package com.ev.ampora_backend.dto.payment;
 
-
 import lombok.Data;
 
 @Data
