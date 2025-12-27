@@ -1,46 +1,51 @@
 package com.ev.ampora_backend.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "charging_sessions")
+@Table(name = "charging_session")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class ChargingSession {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String sessionId;
 
-    private Double energyKwh;
-    private Double billLkr;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    private String rfidUid;
 
     private LocalDateTime startTime;
     private LocalDateTime endTime;
 
-    private Boolean paid = false;
+    private double energyKwh;
+    private double costLkr;
 
-    public ChargingSession() {}
+    @Enumerated(EnumType.STRING)
+    private PaymentMode paymentMode;
 
-    public ChargingSession(LocalDateTime startTime) {
-        this.startTime = startTime;
+    @Enumerated(EnumType.STRING)
+    private Status status;
+
+    public enum PaymentMode {
+        PAYG,
+        WALLET
     }
 
-    // getters & setters
-
-    public String getSessionId() { return sessionId; }
-
-    public Double getEnergyKwh() { return energyKwh; }
-    public void setEnergyKwh(Double energyKwh) { this.energyKwh = energyKwh; }
-
-    public Double getBillLkr() { return billLkr; }
-    public void setBillLkr(Double billLkr) { this.billLkr = billLkr; }
-
-    public LocalDateTime getStartTime() { return startTime; }
-    public void setStartTime(LocalDateTime startTime) { this.startTime = startTime; }
-
-    public LocalDateTime getEndTime() { return endTime; }
-    public void setEndTime(LocalDateTime endTime) { this.endTime = endTime; }
-
-    public Boolean getPaid() { return paid; }
-    public void setPaid(Boolean paid) { this.paid = paid; }
+    public enum Status {
+        LIVE,
+        COMPLETED,
+        PAID
+    }
 }
