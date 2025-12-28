@@ -6,15 +6,17 @@ import lombok.*;
 @Entity
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+@Table(name = "rfid_cards")
 public class RFIDCard {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String cardId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    private String rfidNumber; // Value read from ESP32 reader
+    @Column(unique = true, nullable = false)
+    private String uid;
 
     @OneToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", unique = true)
     private User user;
 }
