@@ -3,9 +3,11 @@ package com.ev.ampora_backend.service;
 import com.ev.ampora_backend.dto.AuthResponse;
 import com.ev.ampora_backend.dto.RegisterRequest;
 import com.ev.ampora_backend.dto.UserDTO;
+import com.ev.ampora_backend.entity.RFIDCard;
 import com.ev.ampora_backend.entity.Role;
 import com.ev.ampora_backend.entity.User;
 import com.ev.ampora_backend.exception.ResourceNotFoundException;
+import com.ev.ampora_backend.repository.RFIDCardRepository;
 import com.ev.ampora_backend.repository.UserRepository;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -27,6 +29,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private  final RFIDCardRepository rfidCardRepository;
 
 
     public UserDTO register(RegisterRequest request) {
@@ -153,4 +156,15 @@ public class UserService {
 
         );
     }
+
+    public User findByRfidUid(String rfidUid) {
+
+        RFIDCard card = rfidCardRepository.findByUid(rfidUid)
+                .orElseThrow(() ->
+                        new RuntimeException("❌ RFID not registered: " + rfidUid)
+                );
+
+        return card.getUser();
+    }
+
 }
