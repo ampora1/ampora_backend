@@ -38,6 +38,12 @@ public class ChargingSession {
     @Enumerated(EnumType.STRING)
     private Status status;
 
+    public ChargingSession(LocalDateTime now) {
+    }
+
+    public void setBillLkr(double bill) {
+    }
+
     public enum PaymentMode {
         PAYG,
         WALLET
