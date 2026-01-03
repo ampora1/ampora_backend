@@ -1,11 +1,14 @@
 package com.ev.ampora_backend.service;
 
 import com.ev.ampora_backend.dto.AssignRFIDRequest;
+import com.ev.ampora_backend.dto.RFIDResponse;
 import com.ev.ampora_backend.entity.RFIDCard;
 import com.ev.ampora_backend.entity.User;
 import com.ev.ampora_backend.repository.RFIDCardRepository;
 import com.ev.ampora_backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class RFIDService {
@@ -18,7 +21,22 @@ public class RFIDService {
         this.userRepo = userRepo;
     }
 
-    public RFIDCard assignRFID(AssignRFIDRequest req) {
+    private RFIDResponse toDTO(RFIDCard rfidCard) {
+        return RFIDResponse.builder()
+                .rfid(rfidCard.getUid())
+                .username(rfidCard.getUser().getFullName())
+                .userId(rfidCard.getUser().getUserId())
+                .build();
+    }
+public List<RFIDResponse> getallRFIDs() {
+       return rfidRepo.findAll().stream().map(this::toDTO).toList();
+
+}
+
+public RFIDResponse getUserRFID(String uid) {
+        return rfidRepo.findByUid(uid).stream().map(this::toDTO).toList().get(0);
+}
+    public RFIDResponse assignRFID(AssignRFIDRequest req) {
 
         // 1️⃣ Validate user
         User user = userRepo.findById(req.getUserId())
@@ -40,6 +58,14 @@ public class RFIDService {
                 .user(user)
                 .build();
 
-        return rfidRepo.save(card);
+        RFIDResponse response=RFIDResponse.builder()
+                .rfid(req.getUid())
+                .username(user.getFullName())
+                .userId(user.getUserId())
+                .build();
+
+         rfidRepo.save(card);
+
+         return  response;
     }
 }
