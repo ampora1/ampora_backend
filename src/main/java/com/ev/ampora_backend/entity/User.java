@@ -22,8 +22,12 @@ public class User {
     private String phone;
     private String password;
     private String address;
+    private String authProvider;
+
+//    private boolean enabled;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = true)
     private Role role;
 
     // One user → One vehicle

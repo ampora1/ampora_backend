@@ -43,4 +43,29 @@ public class DistanceUtil {
         }
         return min;
     }
+    public static double distanceFromStartKm(
+            double[] stationPoint,
+            List<double[]> path
+    ) {
+        double total = 0.0;
+
+        for (int i = 0; i < path.size() - 1; i++) {
+            double[] a = path.get(i);
+            double[] b = path.get(i + 1);
+
+            // distance of this route segment
+            double segmentKm = haversineKm(a, b);
+
+            // if station is close enough to this segment, stop here
+            double distToSegment = distanceToSegmentKm(stationPoint, a, b);
+
+            if (distToSegment < 0.1) { // ~100m tolerance
+                return total;
+            }
+
+            total += segmentKm;
+        }
+
+        return total;
+    }
 }

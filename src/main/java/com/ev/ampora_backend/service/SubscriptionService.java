@@ -10,4 +10,5 @@ public interface SubscriptionService {
     List<SubscriptionDto> getAllSubscription();
     SubscriptionDto getSubscriptionById(String id);
     void deleteSubscription(String id);
+    SubscriptionDto getSubscriptionByUserId(String uId);
 }

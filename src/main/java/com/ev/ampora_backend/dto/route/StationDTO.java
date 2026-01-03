@@ -11,4 +11,6 @@ public class StationDTO {
     private double lon;
     private double powerKw;
     private double distanceToRouteKm;
+    private double distanceFromStartKm;
+
 }

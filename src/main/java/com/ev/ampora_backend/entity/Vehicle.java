@@ -12,12 +12,12 @@ public class Vehicle {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String vehicleId;
-    @Column(nullable = true)
+    @Column(name = "variant", nullable = false)
     private double variant;
     @Column(nullable = true)
     private String plate;
-    @Column(name = "rangeKm",nullable = true)
-    private int rangeKm;
+    @Column(name = "range_km",nullable = false)
+    private double rangeKm;
     private String connectorType;
 
     @ManyToOne

@@ -1,13 +1,19 @@
 package com.ev.ampora_backend.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor @Builder
+@Table(name = "charging_session")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class ChargingSession {
 
     @Id
@@ -18,16 +24,34 @@ public class ChargingSession {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @ManyToOne
-    @JoinColumn(name = "charger_id")
-    private Charger charger;
-
-    private double energyUsedKwh;
-    private double cost;
+    private String rfidUid;
 
     private LocalDateTime startTime;
     private LocalDateTime endTime;
 
+    private double energyKwh;
+    private double costLkr;
+
     @Enumerated(EnumType.STRING)
-    private SessionStatus sessionStatus;
+    private PaymentMode paymentMode;
+
+    @Enumerated(EnumType.STRING)
+    private Status status;
+
+    public ChargingSession(LocalDateTime now) {
+    }
+
+    public void setBillLkr(double bill) {
+    }
+
+    public enum PaymentMode {
+        PAYG,
+        WALLET
+    }
+
+    public enum Status {
+        LIVE,
+        COMPLETED,
+        PAID
+    }
 }

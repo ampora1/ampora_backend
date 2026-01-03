@@ -6,4 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.jar.JarEntry;
 
 public interface ChargingSessionRepository extends JpaRepository<ChargingSession,String> {
+    ChargingSession findTopByOrderByEndTimeDesc();
 }

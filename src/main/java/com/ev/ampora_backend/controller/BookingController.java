@@ -31,11 +31,11 @@ public class BookingController {
     }
 
     // ===================== GET ALL BOOKINGS =====================
-//    @GetMapping
-//    public List<BookingDTO> getAll() {
-//        return bookingService.getAllBookings();
-//    }
-//
+    @GetMapping
+    public List<BookingDTO> getAll() {
+        return bookingService.getAllBookings();
+    }
+
     // ===================== GET BOOKINGS BY USER =====================
     @GetMapping("/user/{userId}")
     public List<BookingDTO> getByUser(@PathVariable String userId) {
@@ -53,4 +53,14 @@ public class BookingController {
 //    public BookingDTO cancelBooking(@PathVariable String bookingId) {
 //        return bookingService.cancelBooking(bookingId);
 //    }
+
+    @PutMapping("/{id}")
+    public BookingDTO updateBooking(
+            @PathVariable String id,
+            @RequestBody BookingDTO dto
+    ) {
+        dto.setBookingId(id);   // 🔥 force path ID into DTO
+        return bookingService.updateBooking(dto);
+    }
+
 }

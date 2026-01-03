@@ -3,9 +3,11 @@ package com.ev.ampora_backend.service;
 import com.ev.ampora_backend.dto.AuthResponse;
 import com.ev.ampora_backend.dto.RegisterRequest;
 import com.ev.ampora_backend.dto.UserDTO;
+import com.ev.ampora_backend.entity.RFIDCard;
 import com.ev.ampora_backend.entity.Role;
 import com.ev.ampora_backend.entity.User;
 import com.ev.ampora_backend.exception.ResourceNotFoundException;
+import com.ev.ampora_backend.repository.RFIDCardRepository;
 import com.ev.ampora_backend.repository.UserRepository;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -27,6 +29,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private  final RFIDCardRepository rfidCardRepository;
 
 
     public UserDTO register(RegisterRequest request) {
@@ -40,14 +43,28 @@ public class UserService {
                 .userId(UUID.randomUUID().toString())
                 .fullName(request.getFullName())
                 .email(request.getEmail())
+                .address(request.getAddress())
                 .phone(request.getPhone())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.USER)
+                .role(Role.valueOf(request.getRole().trim().toUpperCase()))
                 .build();
 
         userRepository.save(user);
 
         return mapToDto(user);
+    }
+    public User findOrCreateGoogleUser(String email, String fullName) {
+
+        return userRepository.findByEmail(email)
+                .orElseGet(() -> {
+                    User user = new User();
+                    user.setUserId(UUID.randomUUID().toString());
+                    user.setEmail(email);
+                    user.setFullName(fullName);
+                    user.setAuthProvider("GOOGLE");
+//                    user.setEnabled(true);
+                    return userRepository.save(user);
+                });
     }
 
 
@@ -135,8 +152,19 @@ public class UserService {
                 user.getFullName(),
                 user.getEmail(),
                 user.getPhone(),
-                user.getAddress(),
-                user.getRole().name()
+                user.getAddress()
+
         );
     }
+
+    public User findByRfidUid(String rfidUid) {
+
+        RFIDCard card = rfidCardRepository.findByUid(rfidUid)
+                .orElseThrow(() ->
+                        new RuntimeException("❌ RFID not registered: " + rfidUid)
+                );
+
+        return card.getUser();
+    }
+
 }

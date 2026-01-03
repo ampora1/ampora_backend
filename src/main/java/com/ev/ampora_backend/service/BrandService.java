@@ -21,7 +21,7 @@ public class BrandService {
         return  brandRepository.findAll().stream()
                 .map(
                         brand -> BrandDTO.builder().
-                                brand_id(brand.getId())
+                                brand_id(Math.toIntExact(brand.getId()))
                                 .brand_name(brand.getName())
                                 .build()
                 ).toList();
@@ -31,7 +31,7 @@ public class BrandService {
         Brand brand = new Brand();
         brand.setName(brandDTO.getBrand_name());
         brandRepository.save(brand);
-        return BrandDTO.builder().brand_id(brand.getId()).brand_name(brand.getName()).build();
+        return BrandDTO.builder().brand_id(Math.toIntExact(brand.getId())).brand_name(brand.getName()).build();
     }
 
     public BrandDTO updateBrand(Long id,BrandDTO brandDTO) {
@@ -40,7 +40,7 @@ public class BrandService {
         brand.get().setName(brandDTO.getBrand_name());
         brandRepository.save(brand.get());
 
-        return BrandDTO.builder().brand_id(brand.get().getId()).brand_name(brand.get().getName()).build();
+        return BrandDTO.builder().brand_id(Math.toIntExact(brand.get().getId())).brand_name(brand.get().getName()).build();
     }
 
 
