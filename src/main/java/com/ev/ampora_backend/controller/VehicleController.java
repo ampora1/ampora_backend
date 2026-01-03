@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@CrossOrigin
 @RestController
 @RequestMapping("/api/vehicles")
 @RequiredArgsConstructor
@@ -47,7 +46,8 @@ public class VehicleController {
   }
 
   @GetMapping("/user/{userId}")
-  public  ResponseEntity<List<VehicleDTO>> getUserVehicle(@PathVariable String userId){
-    return  ResponseEntity.ok(vehicleService.getVehicleByuserId(userId));
+  public List<VehicleDTO> getVehicleByUser(@PathVariable String userId){
+    return vehicleService.getVehicleByUserId(userId);
   }
+
 }

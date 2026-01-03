@@ -21,8 +21,7 @@ public class ModelService {
         return ModelDTO.builder()
                 .model_id(m.getId())
                 .model_name(m.getName())
-                .brand_id(m.getBrand().getId())
-                .brand_name(m.getBrand().getName())
+                .brand_id((long) m.getBrand().getId())
                 .build();
     }
 
@@ -38,7 +37,7 @@ public class ModelService {
     public List<ModelDTO> getModelsByBrand(Long brandId) {
         return modelRepository.findAll()
                 .stream()
-                .filter(m -> m.getBrand().getId().equals(brandId))
+                .filter(m -> m.getBrand().getId() == brandId)
                 .map(this::toDTO)
                 .toList();
     }

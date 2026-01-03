@@ -4,6 +4,8 @@ import com.ev.ampora_backend.entity.StationStatus;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 @Builder
 public class StationResponseDTO {
@@ -13,4 +15,5 @@ public class StationResponseDTO {
     private double latitude;
     private double longitude;
     private StationStatus status;
+    private List<ChargerResponseDTO> chargers;
 }

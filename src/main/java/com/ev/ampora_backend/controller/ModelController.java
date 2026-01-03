@@ -7,7 +7,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/model")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:5173")
 public class ModelController {
     private final ModelService modelService;
     @GetMapping

@@ -1,8 +1,8 @@
+// src/main/java/com/ev/ampora_backend/entity/Booking.java
 package com.ev.ampora_backend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.time.LocalDateTime;
 
 @Entity
@@ -14,17 +14,21 @@ public class Booking {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String bookingId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id")
     private User user;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "charger_id")
     private Charger charger;
 
+    @Column(nullable = false)
     private LocalDateTime startTime;
+
+    @Column(nullable = false)
     private LocalDateTime endTime;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private BookingStatus bookingStatus;
 }

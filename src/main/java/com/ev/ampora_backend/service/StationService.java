@@ -1,5 +1,6 @@
 package com.ev.ampora_backend.service;
 
+import com.ev.ampora_backend.dto.ChargerResponseDTO;
 import com.ev.ampora_backend.dto.StationRequestDTO;
 import com.ev.ampora_backend.dto.StationResponseDTO;
 import com.ev.ampora_backend.entity.Station;
@@ -22,11 +23,11 @@ public class StationService {
     private  final UserRepository userRepository;
     private final  ObjectMapper om;
 
-    public StationResponseDTO create(StationRequestDTO dto){
+    public boolean create(StationRequestDTO dto){
         User operator = userRepository.findById(dto.getOperatorId()).orElse(null);
         Station station = Station.builder().name(dto.getName()).address(dto.getAddress()).latitude(dto.getLatitude()).longitude(dto.getLongitude()).status(dto.getStatus()).operator(operator).build();
         stationRepository.save(station);
-        return toDTO(station);
+        return true;
     }
 
     //get all station
@@ -61,7 +62,18 @@ public class StationService {
     }
 
     private StationResponseDTO toDTO(Station s){
-        return StationResponseDTO.builder().stationId(s.getStationId()).name(s.getName()).address(s.getAddress()).latitude(s.getLatitude()).longitude(s.getLongitude()).status(s.getStatus()).build();
+        return StationResponseDTO.builder()
+                .stationId(s.getStationId())
+                .name(s.getName())
+                .address(s.getAddress())
+                .latitude(s.getLatitude())
+                .longitude(s.getLongitude())
+                .chargers(s.getChargers().stream().map(
+                        c-> ChargerResponseDTO.builder()
+                                .chargerID(c.getChargerId())
+                                .build()
+                             ).toList()
+                ).status(s.getStatus()).build();
     }
 
     public List<Station> loadAllFromJson() throws Exception {
