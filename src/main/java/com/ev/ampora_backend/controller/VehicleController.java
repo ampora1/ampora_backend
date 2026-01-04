@@ -46,8 +46,8 @@ public class VehicleController {
   }
 
   @GetMapping("/user/{userId}")
-  public List<VehicleDTO> getVehicleByUser(@PathVariable String userId){
-    return vehicleService.getVehicleByUserId(userId);
+  public List<VehicleDTO> getVehicleByUser(@PathVariable String usersId){
+    return vehicleService.getVehicleByUserId(usersId);
   }
 
 }
