@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 @Service
 @RequiredArgsConstructor
-public class SubscriptionServiceImpl implements SubscriptionService {
+public class  SubscriptionServiceImpl implements SubscriptionService {
     private final SubscriptionRepository subscriptionRepo;
     private final UserRepository userRepo;
 
@@ -50,9 +50,28 @@ public class SubscriptionServiceImpl implements SubscriptionService {
        return SubscriptionDto.builder().subscriptionId(s.getSubscriptionId()).userId(s.getUser().getUserId()).planName(s.getPlanName()).monthlyFree(s.getMonthlyFee()).active(s.isActive()).build();
     }
 
+    public SubscriptionRepository getSubscriptionByuserIdRepo(  ) {
+        return subscriptionRepo;
+    }
+
     @Override
     public void deleteSubscription(String id) {
         System.out.println("Deleting Vehicle ID: " + id);
        subscriptionRepo.deleteById(id);
     }
+
+    @Override
+    public SubscriptionDto getSubscriptionByUserId(String uId) {
+        Subscription s = subscriptionRepo.findByUser_UserId(uId)
+                .orElseThrow(() -> new RuntimeException("Subscription not found"));
+
+        return SubscriptionDto.builder()
+                .subscriptionId(s.getSubscriptionId())
+                .userId(s.getUser().getUserId())
+                .planName(s.getPlanName())
+                .monthlyFree(s.getMonthlyFee())
+                .active(s.isActive())
+                .build();
+    }
+
 }

@@ -140,11 +140,11 @@ public class UserService {
     }
 
 
-    public void deleteUser(String id) {
-        if (!userRepository.existsById(id)) {
+    public void deleteUser(String Id) {
+        if (!userRepository.existsById(Id)) {
             throw new ResourceNotFoundException("User not found");
         }
-        userRepository.deleteById(id);
+        userRepository.deleteById(Id);
     }
 
 

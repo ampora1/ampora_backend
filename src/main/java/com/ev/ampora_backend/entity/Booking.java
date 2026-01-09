@@ -14,11 +14,11 @@ public class Booking {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String bookingId;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id")
     private User user;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "charger_id")
     private Charger charger;
 

@@ -38,4 +38,9 @@ public class SubscriptionController {
         subscriptionService.deleteSubscription(id);
       return  ResponseEntity.ok("Delete Successfully");
     }
+
+    @GetMapping("/user/{id}")
+    public ResponseEntity<SubscriptionDto> getSubscriptionByuser(@PathVariable String id){
+       return ResponseEntity.ok(subscriptionService.getSubscriptionByUserId(id));
+    }
 }
