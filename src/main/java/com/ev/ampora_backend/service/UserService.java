@@ -46,7 +46,8 @@ public class UserService {
                 .address(request.getAddress())
                 .phone(request.getPhone())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.valueOf(request.getRole().trim().toUpperCase()))
+                .role(Role.USER)
+
                 .build();
 
         userRepository.save(user);
@@ -91,6 +92,7 @@ public class UserService {
 
         response.setToken(token);
         response.setUser_id(user.getUserId());
+        response.setRole(user.getRole());
 
 
         return response;
@@ -152,7 +154,8 @@ public class UserService {
                 user.getFullName(),
                 user.getEmail(),
                 user.getPhone(),
-                user.getAddress()
+                user.getAddress(),
+                user.getRole()
 
         );
     }

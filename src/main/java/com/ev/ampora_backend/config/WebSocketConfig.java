@@ -1,6 +1,5 @@
 package com.ev.ampora_backend.config;
 
-import com.ev.ampora_backend.service.ChargingSessionService;
 import com.ev.ampora_backend.websocket.ChargingWebSocketHandler;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.*;
@@ -19,6 +18,6 @@ public class WebSocketConfig implements WebSocketConfigurer {
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry
                 .addHandler(handler, "/ws/charging")
-                .setAllowedOrigins("*");
+                .setAllowedOriginPatterns("*"); // 🔥 REQUIRED for browser
     }
 }

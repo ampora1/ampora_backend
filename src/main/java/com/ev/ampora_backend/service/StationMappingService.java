@@ -36,6 +36,7 @@ public class StationMappingService {
                 dto.setStationId(s.getStationId());
                 dto.setName(s.getName());
                 dto.setAddress(s.getAddress());
+                dto.setStatus(s.getStatus());
                 dto.setLat(s.getLatitude());
                 dto.setLon(s.getLongitude());
                 dto.setPowerKw(
