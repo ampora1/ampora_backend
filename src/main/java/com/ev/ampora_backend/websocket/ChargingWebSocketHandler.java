@@ -1,15 +1,12 @@
 package com.ev.ampora_backend.websocket;
 
 import com.ev.ampora_backend.dto.RFIDResponse;
+import com.ev.ampora_backend.service.RFIDService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ev.ampora_backend.service.RFIDService;
-import com.ev.ampora_backend.entity.User;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.*;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
-
-import java.util.Optional;
 
 @Component
 public class ChargingWebSocketHandler extends TextWebSocketHandler {
@@ -26,63 +23,56 @@ public class ChargingWebSocketHandler extends TextWebSocketHandler {
         this.rfidService = rfidService;
     }
 
+    /* ================= CONNECT ================= */
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
         sessionManager.add(session);
         System.out.println("🟢 WS CONNECTED: " + session.getId());
     }
 
+    /* ================= MESSAGE ================= */
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
 
-        System.out.println("📥 FROM ESP32: " + message.getPayload());
+        System.out.println("📥 WS IN: " + message.getPayload());
 
         JsonNode root = mapper.readTree(message.getPayload());
         String type = root.get("type").asText();
 
         switch (type) {
 
-            /* ================= AUTH ================= */
             case "AUTH_REQUEST" -> handleAuth(session, root);
 
-            /* ================= LIVE DATA ================= */
-            case "LIVE" -> broadcastLiveData(message);
+            case "LIVE" -> broadcast(message);
 
-            /* ================= SESSION END ================= */
-            case "SESSION_END" -> handleSessionEnd(root);
+            case "SESSION_END" -> broadcastSessionEnd(message);
 
-            default -> System.out.println("⚠️ Unknown message type");
+            default -> System.out.println("⚠️ Unknown WS type: " + type);
         }
     }
 
+    /* ================= AUTH ================= */
     private void handleAuth(WebSocketSession session, JsonNode root) throws Exception {
 
         String uid = root.get("uid").asText();
         System.out.println("🔐 AUTH REQUEST UID: " + uid);
 
-        RFIDResponse userOpt = rfidService.getUserRFID(uid);
+        RFIDResponse user = rfidService.getUserRFID(uid);
 
-        String response;
-
-
-
-
-            response = """
-            {
-              "type": "AUTH_RESPONSE",
-              "authorized": true,
-              "name": "%s"
-            }
-            """.formatted(userOpt.getUsername());
-
-            System.out.println("✅ AUTH OK: " + userOpt.getUsername());
-
-
+        String response = """
+        {
+          "type": "AUTH_RESPONSE",
+          "authorized": true,
+          "name": "%s"
+        }
+        """.formatted(user.getUsername());
 
         session.sendMessage(new TextMessage(response));
+        System.out.println("✅ AUTH OK: " + user.getUsername());
     }
 
-    private void broadcastLiveData(TextMessage message) throws Exception {
+    /* ================= BROADCAST LIVE ================= */
+    private void broadcast(TextMessage message) throws Exception {
         for (WebSocketSession client : sessionManager.getSessions()) {
             if (client.isOpen()) {
                 client.sendMessage(message);
@@ -90,11 +80,18 @@ public class ChargingWebSocketHandler extends TextWebSocketHandler {
         }
     }
 
-    private void handleSessionEnd(JsonNode root) {
-        System.out.println("🧾 SESSION END: " + root);
-        // optional: persist billing data
+    /* ================= SESSION END ================= */
+    private void broadcastSessionEnd(TextMessage message) throws Exception {
+        System.out.println("🧾 SESSION END BROADCAST: " + message.getPayload());
+
+        for (WebSocketSession client : sessionManager.getSessions()) {
+            if (client.isOpen()) {
+                client.sendMessage(message);
+            }
+        }
     }
 
+    /* ================= DISCONNECT ================= */
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
         sessionManager.remove(session);

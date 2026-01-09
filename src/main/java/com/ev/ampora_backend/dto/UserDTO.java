@@ -1,5 +1,6 @@
 package com.ev.ampora_backend.dto;
 
+import com.ev.ampora_backend.entity.Role;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -11,5 +12,7 @@ public class UserDTO {
     private String email;
     private String phone;
     private String address;
-//    private String role;
+    private Role role;
+
+
 }
