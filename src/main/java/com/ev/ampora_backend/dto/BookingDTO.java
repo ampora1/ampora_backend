@@ -4,12 +4,14 @@ import com.ev.ampora_backend.entity.BookingStatus;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString
 public class BookingDTO {
 
     private String bookingId;
@@ -19,8 +21,8 @@ public class BookingDTO {
 
     private LocalDate date;
 
-    private String startTime;
-    private String endTime;
+    private LocalTime startTime;
+    private LocalTime endTime;
     private double amount;
     private String ChargerType;
 

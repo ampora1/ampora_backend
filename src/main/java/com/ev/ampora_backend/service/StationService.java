@@ -71,6 +71,8 @@ public class StationService {
                 .chargers(s.getChargers().stream().map(
                         c-> ChargerResponseDTO.builder()
                                 .chargerID(c.getChargerId())
+                                .status(c.getStatus())
+                                .powerKw(c.getPowerKw())
                                 .build()
                              ).toList()
                 ).status(s.getStatus()).build();

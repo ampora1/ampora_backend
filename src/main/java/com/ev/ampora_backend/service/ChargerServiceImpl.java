@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -20,7 +21,9 @@ public  class ChargerServiceImpl implements  ChargerService{
 
 
     private ChargerResponseDTO toresponse(Charger c){
-        return ChargerResponseDTO.builder().chargerID(c.getChargerId()).type(c.getType()).powerKw(c.getPowerKw()).status(c.getStatus()).stationName(c.getStation() != null ? c.getStation().getStationId():null).build();
+
+        Station station = stationRepo.findById(c.getStation().getStationId()).orElseThrow(() -> new RuntimeException("Station not found"));
+        return ChargerResponseDTO.builder().chargerID(c.getChargerId()).type(c.getType()).powerKw(c.getPowerKw()).status(c.getStatus()).stationName(station.getName()).build();
     }
 
     @Override
