@@ -2,10 +2,7 @@ package com.ev.ampora_backend.service;
 
 import com.ev.ampora_backend.dto.AvailabilityResponse;
 import com.ev.ampora_backend.dto.BookingDTO;
-import com.ev.ampora_backend.entity.Booking;
-import com.ev.ampora_backend.entity.BookingStatus;
-import com.ev.ampora_backend.entity.Charger;
-import com.ev.ampora_backend.entity.User;
+import com.ev.ampora_backend.entity.*;
 import com.ev.ampora_backend.repository.BookingRepository;
 import com.ev.ampora_backend.repository.ChargerRepository;
 import com.ev.ampora_backend.repository.UserRepository;
@@ -86,6 +83,8 @@ public class BookingService {
                 .charger(charger)
                 .startTime(startDT)
                 .endTime(endDT)
+                .bookingFee(300)
+                .paymentStatus(PaymentStatus.PENDING)
                 .bookingStatus(BookingStatus.PENDING)
                 .build();
 
@@ -103,9 +102,15 @@ public class BookingService {
     }
 
 
-    /* -----------------------------------------------------------
-       GET USER BOOKINGS
-    ------------------------------------------------------------ */
+    public void confirmPayment(String bookingId) {
+        Booking booking = bookingRepo.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        booking.setPaymentStatus(PaymentStatus.SUCCESS);
+        booking.setBookingStatus(BookingStatus.CONFIRMED);
+
+        bookingRepo.save(booking);
+    }
     public List<BookingDTO> getBookingsForUser(String userId) {
 
         return bookingRepo.findByUser_UserId(userId).stream().map(b ->
