@@ -7,10 +7,12 @@ pipeline {
         VM_IP      = "3.25.85.147"             // YOUR EC2 PUBLIC IP
     }
 
-    stages {
-        stage('Checkout Source') {
+        stage('Build JAR') {
             steps {
-                git branch: 'numidu', url: 'https://github.com/ampora1/ampora_backend.git'
+                sh '''
+                    rm -rf target
+                    mvn clean package -DskipTests -U
+                '''
             }
         }
 
