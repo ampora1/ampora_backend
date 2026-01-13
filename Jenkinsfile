@@ -24,7 +24,7 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     sh """
-                        docker build -t $IMAGE_NAME .
+                        docker build --build-arg CACHE_BUST=$BUILD_NUMBER -t $IMAGE_NAME .
                         docker push $IMAGE_NAME
                         docker tag $IMAGE_NAME numidu/ampora_backend:latest
                         docker push numidu/ampora_backend:latest
