@@ -45,8 +45,10 @@ pipeline {
                         scp -i \$SSH_KEY_PATH -o StrictHostKeyChecking=no docker-compose.yml ${VM_USER}@${VM_IP}:~/docker-compose.yml
 
                         ssh -i \$SSH_KEY_PATH -o StrictHostKeyChecking=no ${VM_USER}@${VM_IP} '
-                            docker pull ${IMAGE_NAME}:latest
-                            docker compose up -d --remove-orphans
+                                docker pull numidu/ampora_backend:latest
+                                docker compose down
+                                docker compose pull
+                                docker compose up -d --force-recreate
                         '
 
                         echo "Deployment complete"
