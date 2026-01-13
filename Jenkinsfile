@@ -3,9 +3,17 @@ pipeline {
 
     environment {
         IMAGE_NAME = "numidu/ampora_backend:${BUILD_NUMBER}"
-        VM_USER    = "ec2-user"                 // AWS default user
-        VM_IP      = "3.25.85.147"             // YOUR EC2 PUBLIC IP
+        VM_USER    = "ec2-user"
+        VM_IP      = "3.25.85.147"
     }
+
+    stages {
+
+        stage('Checkout Source') {
+            steps {
+                git branch: 'numidu', url: 'https://github.com/ampora1/ampora_backend.git'
+            }
+        }
 
         stage('Build JAR') {
             steps {
@@ -13,12 +21,6 @@ pipeline {
                     rm -rf target
                     mvn clean package -DskipTests -U
                 '''
-            }
-        }
-
-        stage('Build JAR') {
-            steps {
-                sh 'mvn clean package -DskipTests'
             }
         }
 
@@ -30,7 +32,6 @@ pipeline {
                         docker push $IMAGE_NAME
                         docker tag $IMAGE_NAME numidu/ampora_backend:latest
                         docker push numidu/ampora_backend:latest
-
                     """
                 }
             }
@@ -38,21 +39,16 @@ pipeline {
 
         stage('Deploy to AWS EC2') {
             steps {
-                withCredentials([
-                    sshUserPrivateKey(credentialsId: 'ec2_key', keyFileVariable: 'SSH_KEY_PATH')
-                ]) {
+                withCredentials([sshUserPrivateKey(credentialsId: 'ec2_key', keyFileVariable: 'SSH_KEY_PATH')]) {
                     sh """
                         echo "Deploying to AWS EC2..."
-
                         scp -i \$SSH_KEY_PATH -o StrictHostKeyChecking=no docker-compose.yml ${VM_USER}@${VM_IP}:~/docker-compose.yml
-
                         ssh -i \$SSH_KEY_PATH -o StrictHostKeyChecking=no ${VM_USER}@${VM_IP} '
-                                docker pull numidu/ampora_backend:latest
-                                docker compose down
-                                docker compose pull
-                                docker compose up -d --force-recreate
+                            docker pull numidu/ampora_backend:latest
+                            docker compose down
+                            docker compose pull
+                            docker compose up -d --force-recreate
                         '
-
                         echo "Deployment complete"
                     """
                 }
