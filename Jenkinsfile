@@ -4,7 +4,7 @@ pipeline {
     environment {
         IMAGE_NAME = "numidu/ampora_backend"
         VM_USER    = "ec2-user"                 // AWS default user
-        VM_IP      = "3.107.210.88"             // YOUR EC2 PUBLIC IP
+        VM_IP      = "3.25.85.147"             // YOUR EC2 PUBLIC IP
     }
 
     stages {
