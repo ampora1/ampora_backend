@@ -10,7 +10,7 @@ pipeline {
     stages {
         stage('Checkout Source') {
             steps {
-                git branch: 'numidu', url: 'https://github.com/mari75a/ampora_backend.git'
+                git branch: 'numidu', url: 'https://github.com/ampora1/ampora_backend.git'
             }
         }
 
