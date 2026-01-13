@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "numidu/ampora_backend"
+        IMAGE_NAME = "numidu/ampora_backend:${BUILD_NUMBER}"
         VM_USER    = "ec2-user"                 // AWS default user
         VM_IP      = "3.25.85.147"             // YOUR EC2 PUBLIC IP
     }
@@ -24,9 +24,11 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     sh """
-                        docker build -t ${IMAGE_NAME}:latest .
-                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                        docker push ${IMAGE_NAME}:latest
+                        docker build -t $IMAGE_NAME .
+                        docker push $IMAGE_NAME
+                        docker tag $IMAGE_NAME numidu/ampora_backend:latest
+                        docker push numidu/ampora_backend:latest
+
                     """
                 }
             }
