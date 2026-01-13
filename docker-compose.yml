@@ -21,12 +21,12 @@ services:
     depends_on:
       - postgres
     ports:
-      - "8083:8081"
+      - "8083:8083"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ampora
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres123
-      SERVER_PORT: 8081
+      SERVER_PORT: 8083
       # This variable will be passed from the SSH command in Jenkins
       GOOGLE_API_KEY: ${GOOGLE_API_KEY}
 
