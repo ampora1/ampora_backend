@@ -4,7 +4,7 @@ pipeline {
     environment {
         IMAGE_NAME = "numidu/ampora_backend:${BUILD_NUMBER}"
         VM_USER    = "ec2-user"
-        VM_IP      = "3.25.85.147"
+        VM_IP      = "13.211.243.202"
     }
 
     stages {
