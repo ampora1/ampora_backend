@@ -1,13 +1,14 @@
 package com.ev.ampora_backend.service;
 
 import com.ev.ampora_backend.exception.InvalidPropertyException;
-import com.ev.ampora_backend.repository.StationRepository;
+import com.ev.ampora_backend.repository.UserRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.Cipher;
@@ -27,10 +28,12 @@ public class PasswordResetServiceImpl implements IPasswordResetService {
     private static final String ALGORITHM = "AES";
     private static final String SECRET_KEY = "MySuperSecretKey"; // 16 characters for AES-128
 
-
     @Override
     public String sendPasswordResetEmail(String email) throws MessagingException {
-        int verificationCode = generateCode(5);
+        int verificationCode = generateCode(6);
+        long expirationTime = System.currentTimeMillis() + (10 * 60 * 1000); // Expire in 10 mins
+
+        verificationStorage.put(email, new VerificationData(verificationCode, expirationTime));
 
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true);
@@ -96,6 +99,7 @@ public class PasswordResetServiceImpl implements IPasswordResetService {
         return encrypt(email);
     }
 
+
     @Override
     public String verifyCode(int code, String token) {
         String email = decrypt(token);
@@ -111,7 +115,6 @@ public class PasswordResetServiceImpl implements IPasswordResetService {
             throw new InvalidPropertyException("Invalid verification code.");
         }
     }
-
 
     private int generateCode(int length) {
         StringBuilder sb = new StringBuilder();
