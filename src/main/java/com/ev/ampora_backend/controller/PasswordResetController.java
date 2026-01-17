@@ -1,5 +1,6 @@
 package com.ev.ampora_backend.controller;
 
+import com.ev.ampora_backend.dto.EmailVerificationCodeReqDto;
 import com.ev.ampora_backend.dto.PasswordResetGenericResDto;
 import com.ev.ampora_backend.service.IPasswordResetService;
 import jakarta.mail.MessagingException;
@@ -18,12 +19,25 @@ public class PasswordResetController {
 
     @PostMapping("/send-verification-email")
     public ResponseEntity<PasswordResetGenericResDto> sendVerificationEmail(@RequestParam String email) throws MessagingException {
-        passwordResetService.sendPasswordResetEmail(email);
+        String result = passwordResetService.sendPasswordResetEmail(email);
         return new ResponseEntity<>(
                 new PasswordResetGenericResDto(
                         200,
                         "Verification email sent successfully",
-                        null
+                        result
+                ),
+                HttpStatus.OK
+        );
+    }
+
+    @PostMapping("/verify-code/{token}")
+    public ResponseEntity<PasswordResetGenericResDto> verifyCode(@RequestBody EmailVerificationCodeReqDto dto, @PathVariable String token) {
+        String result = passwordResetService.verifyCode(dto.getCode(), token);
+        return new ResponseEntity<>(
+                new PasswordResetGenericResDto(
+                        200,
+                        "Code verified successfully",
+                        result
                 ),
                 HttpStatus.OK
         );

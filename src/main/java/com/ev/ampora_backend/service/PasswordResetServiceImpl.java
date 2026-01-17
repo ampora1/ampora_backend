@@ -1,5 +1,6 @@
 package com.ev.ampora_backend.service;
 
+import com.ev.ampora_backend.exception.InvalidPropertyException;
 import com.ev.ampora_backend.repository.StationRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -9,6 +10,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
 import java.util.*;
 
 @Service
@@ -19,9 +22,14 @@ public class PasswordResetServiceImpl implements IPasswordResetService {
     private JavaMailSender mailSender;
 
     private final String NUMBERS = "0123456789";
+    private final Map<String, VerificationData> verificationStorage = new HashMap<>();
+
+    private static final String ALGORITHM = "AES";
+    private static final String SECRET_KEY = "MySuperSecretKey"; // 16 characters for AES-128
+
 
     @Override
-    public void sendPasswordResetEmail(String email) throws MessagingException {
+    public String sendPasswordResetEmail(String email) throws MessagingException {
         int verificationCode = generateCode(5);
 
         MimeMessage message = mailSender.createMimeMessage();
@@ -66,7 +74,7 @@ public class PasswordResetServiceImpl implements IPasswordResetService {
             </head>
             <body>
                 <div class="container">
-                    <h2>Email Verification</h2>
+                    <h2>Reset Your Ampora Password</h2>
                     <div class="message">
                         <p>Please use the verification code below to reset your password:</p>
                     </div>
@@ -84,8 +92,25 @@ public class PasswordResetServiceImpl implements IPasswordResetService {
 
         helper.setText(htmlContent, true);
         mailSender.send(message);
+
+        return encrypt(email);
     }
 
+    @Override
+    public String verifyCode(int code, String token) {
+        String email = decrypt(token);
+        VerificationData data = verificationStorage.get(email);
+
+        if (data == null || System.currentTimeMillis() > data.getExpirationTime()) {
+            throw new InvalidPropertyException("Verification code has expired or does not exist.");
+        }
+
+        if (data.getCode() == code) {
+            return encrypt(email);
+        } else {
+            throw new InvalidPropertyException("Invalid verification code.");
+        }
+    }
 
 
     private int generateCode(int length) {
@@ -101,5 +126,48 @@ public class PasswordResetServiceImpl implements IPasswordResetService {
         }
 
         return Integer.parseInt(sb.toString());
+    }
+
+    private static class VerificationData {
+        private final int code;
+        private final long expirationTime;
+
+        public VerificationData(int code, long expirationTime) {
+            this.code = code;
+            this.expirationTime = expirationTime;
+        }
+
+        public int getCode() {
+            return code;
+        }
+
+        public long getExpirationTime() {
+            return expirationTime;
+        }
+    }
+
+    private static String encrypt(String value) {
+        try {
+            SecretKeySpec key = new SecretKeySpec(SECRET_KEY.getBytes(), ALGORITHM);
+            Cipher cipher = Cipher.getInstance(ALGORITHM);
+            cipher.init(Cipher.ENCRYPT_MODE, key);
+            byte[] encryptedBytes = cipher.doFinal(value.getBytes());
+            return Base64.getUrlEncoder().encodeToString(encryptedBytes);
+        } catch (Exception e) {
+            throw new RuntimeException("Error encrypting value", e);
+        }
+    }
+
+    private static String decrypt(String encryptedValue) {
+        try {
+            SecretKeySpec key = new SecretKeySpec(SECRET_KEY.getBytes(), ALGORITHM);
+            Cipher cipher = Cipher.getInstance(ALGORITHM);
+            cipher.init(Cipher.DECRYPT_MODE, key);
+            byte[] decodedBytes = Base64.getUrlDecoder().decode(encryptedValue);
+            byte[] decryptedBytes = cipher.doFinal(decodedBytes);
+            return new String(decryptedBytes);
+        } catch (Exception e) {
+            throw new RuntimeException("Error decrypting value", e);
+        }
     }
 }

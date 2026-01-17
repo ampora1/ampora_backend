@@ -3,5 +3,6 @@ package com.ev.ampora_backend.service;
 import jakarta.mail.MessagingException;
 
 public interface IPasswordResetService {
-    void sendPasswordResetEmail(String email) throws MessagingException;
+    String sendPasswordResetEmail(String email) throws MessagingException;
+    String verifyCode(int code, String token);
 }
