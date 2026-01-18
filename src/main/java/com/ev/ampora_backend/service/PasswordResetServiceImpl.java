@@ -1,5 +1,8 @@
 package com.ev.ampora_backend.service;
 
+import com.ev.ampora_backend.dto.PasswordResetReqDto;
+import com.ev.ampora_backend.entity.User;
+import com.ev.ampora_backend.exception.EntryNotFoundException;
 import com.ev.ampora_backend.exception.InvalidPropertyException;
 import com.ev.ampora_backend.repository.UserRepository;
 import jakarta.mail.MessagingException;
@@ -21,6 +24,10 @@ public class PasswordResetServiceImpl implements IPasswordResetService {
 
     @Autowired
     private JavaMailSender mailSender;
+    @Autowired
+    private UserRepository userRepository;
+
+    private final PasswordEncoder passwordEncoder;
 
     private final String NUMBERS = "0123456789";
     private final Map<String, VerificationData> verificationStorage = new HashMap<>();
@@ -114,6 +121,28 @@ public class PasswordResetServiceImpl implements IPasswordResetService {
         } else {
             throw new InvalidPropertyException("Invalid verification code.");
         }
+    }
+
+    @Override
+    public void resetPassword(PasswordResetReqDto dto, String token) {
+
+        String email = decrypt(token);
+
+        if(!dto.getNewPassword().equals(dto.getConfirmPassword())) {
+            throw new InvalidPropertyException("Passwords do not match.");
+        }
+
+        Optional<User> selectedUser = userRepository.findByEmail(email);
+
+        if (selectedUser.isEmpty()) {
+            throw new EntryNotFoundException("User not found.");
+        }
+
+        User user = selectedUser.get();
+
+        user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+
+        userRepository.save(user);
     }
 
     private int generateCode(int length) {

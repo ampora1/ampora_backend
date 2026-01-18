@@ -2,6 +2,7 @@ package com.ev.ampora_backend.controller;
 
 import com.ev.ampora_backend.dto.EmailVerificationCodeReqDto;
 import com.ev.ampora_backend.dto.PasswordResetGenericResDto;
+import com.ev.ampora_backend.dto.PasswordResetReqDto;
 import com.ev.ampora_backend.service.IPasswordResetService;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +39,19 @@ public class PasswordResetController {
                         200,
                         "Code verified successfully",
                         result
+                ),
+                HttpStatus.OK
+        );
+    }
+
+    @PatchMapping("/reset-password/{token}")
+    public ResponseEntity<PasswordResetGenericResDto> resetPassword(@RequestBody PasswordResetReqDto dto, @PathVariable String token) {
+        passwordResetService.resetPassword(dto, token);
+        return new ResponseEntity<>(
+                new PasswordResetGenericResDto(
+                        200,
+                        "Password reset successfully",
+                        null
                 ),
                 HttpStatus.OK
         );
