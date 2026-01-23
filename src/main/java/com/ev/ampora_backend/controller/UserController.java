@@ -9,7 +9,7 @@ import java.security.Principal;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/userss")
+@RequestMapping("/api/users")
 @CrossOrigin
 public class UserController {
 
