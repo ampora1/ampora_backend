@@ -19,7 +19,16 @@ public class StationController {
     public boolean create(@RequestBody StationRequestDTO dto){
         return stationService.create(dto);
     }
+    @PostMapping("/bulk")
+    public ResponseEntity<?> createBulk(@RequestBody List<StationRequestDTO> stations) {
 
+        if (stations == null || stations.isEmpty()) {
+            return ResponseEntity.badRequest().body("Station list cannot be empty");
+        }
+
+        stationService.createBulk(stations);
+        return ResponseEntity.ok("Stations inserted successfully");
+    }
     @GetMapping
     public ResponseEntity<List<StationResponseDTO>> getAll(){
         return ResponseEntity.ok(stationService.getAll());

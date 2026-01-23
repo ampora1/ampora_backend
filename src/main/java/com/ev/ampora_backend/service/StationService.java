@@ -40,6 +40,26 @@ public class StationService {
         Station s = stationRepository.findById(id).orElseThrow(()->new  RuntimeException("Station not found"));
         return toDTO(s);
     }
+    public void createBulk(List<StationRequestDTO> dtos) {
+
+        List<Station> stations = dtos.stream().map(dto -> {
+
+            User operator = userRepository.findById(dto.getOperatorId())
+                    .orElseThrow(() -> new RuntimeException("Operator not found: " + dto.getOperatorId()));
+
+            return Station.builder()
+                    .name(dto.getName())
+                    .address(dto.getAddress())
+                    .latitude(dto.getLatitude())
+                    .longitude(dto.getLongitude())
+                    .status(dto.getStatus())
+                    .operator(operator)
+                    .build();
+
+        }).toList();
+
+        stationRepository.saveAll(stations);
+    }
 
     //update Station
     public StationResponseDTO update(String id,StationRequestDTO dto){
