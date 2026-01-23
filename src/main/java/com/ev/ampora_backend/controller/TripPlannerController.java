@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/trip")
 @RequiredArgsConstructor
-@CrossOrigin
+@CrossOrigin(origins = "http://15.134.60.252, http://localhost:5173")
 public class TripPlannerController {
 
     private final GoogleMapsService googleMapsService;
