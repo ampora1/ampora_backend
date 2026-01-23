@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api")
+@CrossOrigin(origins = "http://15.134.60.252, http://localhost:5173")
 public class TripController {
 
     private final TripService service;
