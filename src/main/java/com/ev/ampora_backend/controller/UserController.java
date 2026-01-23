@@ -10,7 +10,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin
+@CrossOrigin(origins = "http://15.134.60.252, http://localhost:5173")
 public class UserController {
 
 
