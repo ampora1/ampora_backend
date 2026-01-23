@@ -49,6 +49,7 @@ public class PaymentController {
                 req.getOrderId(),
                 formattedAmount,
                 req.getCurrency()
+
         );
 
         System.out.println(payHereService.getMerchantId()+req.getOrderId()+formattedAmount+req.getCurrency()+hash);
