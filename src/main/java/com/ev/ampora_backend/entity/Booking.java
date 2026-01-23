@@ -3,7 +3,9 @@ package com.ev.ampora_backend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.LocalDateTime;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Entity
 @Getter @Setter
@@ -23,10 +25,12 @@ public class Booking {
     private Charger charger;
 
     @Column(nullable = false)
-    private LocalDateTime startTime;
+    private LocalTime startTime;
 
     @Column(nullable = false)
-    private LocalDateTime endTime;
+    private LocalTime endTime;
+
+    private LocalDate date;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -37,5 +41,6 @@ public class Booking {
 
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
+
 
 }

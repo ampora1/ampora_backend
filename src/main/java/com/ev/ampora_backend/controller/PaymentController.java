@@ -4,10 +4,13 @@ import com.ev.ampora_backend.dto.BookingDTO;
 import com.ev.ampora_backend.dto.SubscriptionDto;
 import com.ev.ampora_backend.dto.payment.PayHereHashRequest;
 import com.ev.ampora_backend.dto.payment.PayHereHashResponse;
+import com.ev.ampora_backend.entity.Booking;
 import com.ev.ampora_backend.entity.BookingStatus;
-import com.ev.ampora_backend.service.BookingService;
-import com.ev.ampora_backend.service.PayHereService;
-import com.ev.ampora_backend.service.SubscriptionService;
+import com.ev.ampora_backend.entity.ChargingSession;
+import com.ev.ampora_backend.entity.PaymentStatus;
+import com.ev.ampora_backend.repository.BookingRepository;
+import com.ev.ampora_backend.repository.ChargingSessionRepository;
+import com.ev.ampora_backend.service.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +21,7 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Map;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/payment")
@@ -28,6 +32,9 @@ public class PaymentController {
     private final PayHereService payHereService;
     private final SubscriptionService subscriptionService;
     private final BookingService bookingService;
+    private  final BookingRepository bookingRepository;
+    private final ChargingSessionRepository chargingSessionRepository;
+    private final ChargingPaymentService chargingPaymentService;
 
     @PostMapping("/payhere/hash")
     public PayHereHashResponse generateHash(@RequestBody PayHereHashRequest req) {
@@ -53,47 +60,67 @@ public class PaymentController {
                 hash
         );
     }
+
+    @PostMapping("/pending")
+    public ResponseEntity<Map<String, String>> createPendingBooking(
+            @RequestBody BookingDTO dto) {
+
+        String bookingId = bookingService.createPendingBooking(dto);
+
+        return ResponseEntity.ok(
+                Map.of("bookingId", bookingId)
+        );
+    }
     @PostMapping("/payhere/notify1")
-    public ResponseEntity<String> payHereNotify1(@RequestParam Map<String, String> params) {
+    public ResponseEntity<String> payHereNotify(
+            @RequestParam Map<String, String> params) {
 
+        System.out.println("🔔 PayHere Notify Received");
+        params.forEach((k, v) -> System.out.println(k + " = " + v));
 
-        String statusCode = params.get("status_code");
-
-        if (!"2".equals(statusCode)) {
-            System.out.println("❌ Payment failed or cancelled");
-            return ResponseEntity.ok("Payment not successful");
+        if (!"2".equals(params.get("status_code"))) {
+            return ResponseEntity.ok("Ignored");
         }
 
-        System.out.println("✅ Payment confirmed by PayHere");
+        String bookingId = params.get("custom_1");
+        String paymentId = params.get("payment_id");
 
-        // ===== Extract booking metadata =====
-        String chargerId = params.get("custom_1");
-        String bookingDate = params.get("custom_2");   // yyyy-MM-dd
-        String startTime = params.get("custom_3");     // HH:mm
-        int duration = Integer.parseInt(params.get("custom_4"));
-        String userId = params.get("custom_5");
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow();
 
-        // ===== Calculate end time =====
-        LocalTime start = LocalTime.parse(startTime);
-        LocalTime end = start.plusHours(duration);
+        if (booking.getPaymentStatus() == PaymentStatus.SUCCESS) {
+            return ResponseEntity.ok("Already processed");
+        }
 
-        // ===== Create booking AFTER payment =====
-        bookingService.createBooking(
-                BookingDTO.builder()
-                        .userId(userId)
-                        .chargerId(chargerId)
-                        .date(LocalDate.parse(bookingDate))
-                        .startTime(start)
-                        .endTime(end)
-                        .status(BookingStatus.CONFIRMED)
-                        .amount(300) // booking fee
-                        .build()
-        );
+        booking.setPaymentStatus(PaymentStatus.SUCCESS);
+        booking.setBookingStatus(BookingStatus.PENDING);
+//        booking.setPaymentId(paymentId);
+        bookingRepository.save(booking);
 
-        System.out.println("⚡ Booking created successfully");
+        System.out.println("✅ Booking confirmed");
 
         return ResponseEntity.ok("OK");
     }
+
+    @PostMapping("/payhere/charging-notify")
+    public ResponseEntity<String> chargingNotify(
+            @RequestParam Map<String, String> params) {
+
+        if (!"2".equals(params.get("status_code"))) {
+            return ResponseEntity.ok("Ignored");
+        }
+
+        String chargingPaymentId = params.get("custom_1");
+        String payHerePaymentId = params.get("payment_id");
+
+        chargingPaymentService.confirmPayment(
+                chargingPaymentId,
+                payHerePaymentId
+        );
+
+        return ResponseEntity.ok("OK");
+    }
+
     @PostMapping("payhere/notify")
     public ResponseEntity<String> payHereNotify(@RequestBody SubscriptionDto request) {
 

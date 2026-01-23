@@ -22,9 +22,7 @@ public class BookingService {
     private final UserRepository userRepo;
     private final ChargerRepository chargerRepo;
 
-    /* -----------------------------------------------------------
-       FIX: Safely parse time (handles invalid 24:xx format)
-    ------------------------------------------------------------ */
+
     private LocalDateTime safeParseTime(String time) {
 
         return LocalDateTime.parse(time);
@@ -36,11 +34,11 @@ public class BookingService {
         LocalTime startTime = start;
         LocalTime endTime = end;
 
-        LocalDateTime startDT = LocalDateTime.of(date, LocalTime.from(startTime));
-        LocalDateTime endDT = LocalDateTime.of(date, LocalTime.from(endTime));
+//        LocalDateTime startDT = LocalDateTime.of(date, startTime);
+//        LocalDateTime endDT = LocalDateTime.of(date, endTime);
 
         List<Booking> overlapping = bookingRepo
-                .findOverlappingBookings(chargerId, startDT, endDT);
+                .findOverlappingBookings(chargerId, startTime, endTime);
 
         boolean available = overlapping.isEmpty();
 
@@ -50,9 +48,7 @@ public class BookingService {
                 .build();
     }
 
-    /* -----------------------------------------------------------
-       CREATE BOOKING
-    ------------------------------------------------------------ */
+
     public BookingDTO createBooking(BookingDTO dto) {
         System.out.println("Booking created");
         System.out.println("dto: " + dto.toString());
@@ -72,7 +68,7 @@ public class BookingService {
         LocalDateTime endDT = LocalDateTime.of(dto.getDate(), end);
 
         boolean available = bookingRepo
-                .findOverlappingBookings(dto.getChargerId(), startDT, endDT)
+                .findOverlappingBookings(dto.getChargerId(), start, end)
                 .isEmpty();
 
         if (!available)
@@ -81,8 +77,8 @@ public class BookingService {
         Booking booking = Booking.builder()
                 .user(user)
                 .charger(charger)
-                .startTime(startDT)
-                .endTime(endDT)
+                .startTime(LocalTime.from(startDT))
+                .endTime(LocalTime.from(endDT))
                 .bookingFee(300)
                 .paymentStatus(PaymentStatus.PENDING)
                 .bookingStatus(BookingStatus.PENDING)
@@ -99,6 +95,28 @@ public class BookingService {
                 .endTime(dto.getEndTime())
                 .status(saved.getBookingStatus())
                 .build();
+    }
+
+    public String createPendingBooking(BookingDTO dto) {
+        User user = userRepo.findById(dto.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Charger charger = chargerRepo.findById(dto.getChargerId())
+                .orElseThrow(() -> new RuntimeException("Charger not found"));
+        Booking booking = Booking.builder()
+                .user(user)
+                .charger(charger)
+                .startTime(dto.getStartTime())
+                .endTime(dto.getEndTime())
+                .date(dto.getDate())
+                .bookingFee((int) dto.getAmount())
+                .bookingStatus(BookingStatus.PENDING)
+                .paymentStatus(PaymentStatus.PENDING)
+                .build();
+
+        bookingRepo.save(booking);
+        System.out.println("Booking created"+booking.getBookingId());
+
+        return booking.getBookingId(); // UUID / generated ID
     }
 
 
@@ -118,9 +136,9 @@ public class BookingService {
                         .bookingId(b.getBookingId())
                         .userId(b.getUser().getUserId())
                         .chargerId(b.getCharger().getChargerId())
-                        .date(b.getStartTime().toLocalDate())
-                        .startTime(LocalTime.from(b.getStartTime()))
-                        .endTime(LocalTime.from(b.getEndTime()))
+                        .date(b.getDate())
+                        .startTime(b.getStartTime())
+                        .endTime(b.getEndTime())
                         .status(b.getBookingStatus())
                         .amount(1000)
                         .ChargerType(b.getCharger().getType())
@@ -128,9 +146,7 @@ public class BookingService {
         ).toList();
     }
 
-    /* -----------------------------------------------------------
-       CANCEL BOOKING
-    ------------------------------------------------------------ */
+
     public void cancelBooking(String bookingId) {
         Booking booking = bookingRepo.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
@@ -143,9 +159,9 @@ public class BookingService {
         return  bookingRepo.findAll().stream().map(b->BookingDTO.builder().bookingId(b.getBookingId())
                 .userId(b.getUser().getUserId())
                 .chargerId(b.getCharger().getChargerId())
-                .date(b.getStartTime().toLocalDate())
-                .startTime(LocalTime.from(b.getStartTime()))
-                .endTime(LocalTime.from(b.getEndTime()))
+              .date(b.getDate())
+                .startTime(b.getStartTime())
+                .endTime(b.getEndTime())
                 .status(b.getBookingStatus())
                 .amount(1000)
                 .ChargerType(b.getCharger().getType()).build()).toList();
@@ -179,8 +195,8 @@ public class BookingService {
 
         booking.setUser(user);
         booking.setCharger(charger);
-        booking.setStartTime(startDT);
-        booking.setEndTime(endDT);
+        booking.setStartTime(LocalTime.from(startDT));
+        booking.setEndTime(LocalTime.from(endDT));
         booking.setBookingStatus(dto.getStatus());
 
         Booking saved = bookingRepo.save(booking);
@@ -189,7 +205,7 @@ public class BookingService {
                 .bookingId(saved.getBookingId())
                 .userId(user.getUserId())
                 .chargerId(charger.getChargerId())
-                .date(saved.getStartTime().toLocalDate())
+                .date(LocalDate.from(saved.getStartTime()))
                 .startTime(LocalTime.from(saved.getStartTime()))
                 .endTime(LocalTime.from(saved.getEndTime()))
                 .status(saved.getBookingStatus())

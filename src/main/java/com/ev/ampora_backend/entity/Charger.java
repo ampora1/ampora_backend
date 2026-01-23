@@ -11,8 +11,8 @@ public class Charger {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String chargerId;
 
-    private String type;       // Fast / Slow
-    private double powerKw;    // 7kW / 22kW / 50kW / 120kW
+    private String type;
+    private double powerKw;
 
     @Enumerated(EnumType.STRING)
     private ChargerStatus status;

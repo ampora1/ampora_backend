@@ -72,6 +72,7 @@ public class StationService {
                         c-> ChargerResponseDTO.builder()
                                 .chargerID(c.getChargerId())
                                 .status(c.getStatus())
+                                .type(c.getType())
                                 .powerKw(c.getPowerKw())
                                 .build()
                              ).toList()
