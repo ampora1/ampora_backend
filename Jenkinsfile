@@ -2,21 +2,25 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "numidu/ampora_backend"
-        VM_USER    = "dnumidu"
-        VM_IP      = "34.14.149.31"
+        IMAGE_NAME = "numidu/ampora_backend:${BUILD_NUMBER}"
+        VM_USER    = "ec2-user"
+        VM_IP      = "13.211.243.202"
     }
 
     stages {
+
         stage('Checkout Source') {
             steps {
-                git branch: 'numidu', url: 'https://github.com/mari75a/ampora_backend.git'
+                git branch: 'main', url: 'https://github.com/ampora1/ampora_backend.git'
             }
         }
 
         stage('Build JAR') {
             steps {
-                sh 'mvn clean package -DskipTests'
+                sh '''
+                    rm -rf target
+                    mvn clean package -DskipTests -U
+                '''
             }
         }
 
@@ -24,39 +28,28 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     sh """
-                        docker build -t ${IMAGE_NAME}:latest .
-                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                        docker push ${IMAGE_NAME}:latest
+                        docker build --build-arg CACHE_BUST=$BUILD_NUMBER -t $IMAGE_NAME .
+                        docker push $IMAGE_NAME
+                        docker tag $IMAGE_NAME numidu/ampora_backend:latest
+                        docker push numidu/ampora_backend:latest
                     """
                 }
             }
         }
 
-        stage('Deploy to GCP VM') {
+        stage('Deploy to AWS EC2') {
             steps {
-                withCredentials([
-                    sshUserPrivateKey(credentialsId: 'gcp_vm_key', keyFileVariable: 'SSH_KEY_PATH'),
-                    string(credentialsId: 'google-api-key', variable: 'G_API_KEY')
-                ]) {
-                    // Use double quotes for the block so ${VM_USER} works, 
-                    // but escape the \$SSH_KEY_PATH so it stays a shell variable.
+                withCredentials([sshUserPrivateKey(credentialsId: 'ec2_key', keyFileVariable: 'SSH_KEY_PATH')]) {
                     sh """
-                        echo "Attempting to copy docker-compose.yml to ${VM_IP}..."
-                        
-                        # 1. Copy the docker-compose file
+                        echo "Deploying to AWS EC2..."
                         scp -i \$SSH_KEY_PATH -o StrictHostKeyChecking=no docker-compose.yml ${VM_USER}@${VM_IP}:~/docker-compose.yml
-
-                        # 2. Connect and Deploy
-                        ssh -i \$SSH_KEY_PATH -o StrictHostKeyChecking=no ${VM_USER}@${VM_IP} "
-                            set -e
-                            export GOOGLE_API_KEY='${G_API_KEY}'
-                            
-                            # Navigate to home and update containers
+                        ssh -i \$SSH_KEY_PATH -o StrictHostKeyChecking=no ${VM_USER}@${VM_IP} '
+                            docker pull numidu/ampora_backend:latest
+                            docker compose down
                             docker compose pull
-                            docker compose up -d --remove-orphans
-                            
-                            echo 'Deployment complete on remote VM'
-                        "
+                            docker compose up -d --force-recreate
+                        '
+                        echo "Deployment complete"
                     """
                 }
             }
@@ -65,10 +58,10 @@ pipeline {
 
     post {
         success {
-            echo "✅ Deployment successful!"
+            echo "✅ AWS Deployment successful!"
         }
         failure {
-            echo "❌ Deployment failed. Check the Jenkins console logs for details."
+            echo "❌ Deployment failed. Check Jenkins logs."
         }
     }
 }
