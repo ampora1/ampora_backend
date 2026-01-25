@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   postgres:
-    image: image: postgis/postgis:16-3.4
+    image: postgis/postgis:16-3.4
     container_name: ampora_postgres
     restart: always
     environment:
