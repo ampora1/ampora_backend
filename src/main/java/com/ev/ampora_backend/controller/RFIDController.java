@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/rfid")
-@CrossOrigin(origins = "http://15.134.60.252, http://localhost:5173")
+@CrossOrigin(origins = "http://15.134.60.252, http://localhost:5173,https://ampora.dev")
 public class RFIDController {
 
     private final RFIDService rfidService;

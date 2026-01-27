@@ -14,7 +14,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/charging-payments")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://15.134.60.252, http://localhost:5173")
+@CrossOrigin(origins = "http://15.134.60.252, http://localhost:5173,https://ampora.dev")
 public class ChargingPaymentController {
 
     private final ChargingPaymentService service;

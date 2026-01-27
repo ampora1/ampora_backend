@@ -16,7 +16,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://15.134.60.252, http://localhost:5173")
+@CrossOrigin(origins = "http://15.134.60.252, http://localhost:5173,https://ampora.dev")
 public class AuthController {
 
     private final UserService userService;

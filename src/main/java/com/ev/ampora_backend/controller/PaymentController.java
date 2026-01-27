@@ -26,7 +26,7 @@ import java.util.Objects;
 @RestController
 @RequestMapping("/api/payment")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://15.134.60.252, http://localhost:5173")
+@CrossOrigin(origins = "http://15.134.60.252, http://localhost:5173,https://ampora.dev")
 public class PaymentController {
 
     private final PayHereService payHereService;
