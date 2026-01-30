@@ -18,6 +18,6 @@ public class WebSocketConfig implements WebSocketConfigurer {
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry
                 .addHandler(handler, "/ws/charging")
-                .setAllowedOriginPatterns("*"); // 🔥 REQUIRED for browser
+                .setAllowedOriginPatterns("wss://ampora.dev"); // 🔥 REQUIRED for browser
     }
 }
