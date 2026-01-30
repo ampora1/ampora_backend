@@ -23,7 +23,7 @@ services:
     ports:
       - "8083:8083"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ampora
+      SPRING_DATASOURCE_URL: jdbc:postgresql://ampora_postgres:5432/ampora
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres123
       SERVER_PORT: 8083
@@ -34,6 +34,23 @@ services:
       PAYHERE_SANDBOX: "true"
       GOOGLE_CLIENT_ID: "1036320353420-nnvlhjidmtj36mucnfu78bu4r5ndotcp.apps.googleusercontent.com"
       JWT_SECRET: "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"
+
+  ml:
+    image: numidu/ampora_ml:latest
+    container_name: ampora_ml
+    restart: always
+    depends_on:
+      - postgres
+    ports:
+      - "8001:8001"
+    environment:
+      DB_HOST: ampora_postgres
+      DB_PORT: 5432
+      DB_NAME: ampora
+      DB_USER: postgres
+      DB_PASSWORD: postgres123
+      GROQ_API_KEY: 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
+      GMAPS_API_KEY: AIzaSyCGX_5oc5ijf_B-df9TT_zocjcc4-qfBRk
 
 volumes:
   postgres_data:
