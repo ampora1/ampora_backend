@@ -1,6 +1,7 @@
 package com.ev.ampora_backend.service;
 
 import com.ev.ampora_backend.dto.ChargingPaymentRequestDTO;
+import com.ev.ampora_backend.dto.ChargingPaymentResponseDTO;
 import com.ev.ampora_backend.entity.ChargingPayment;
 import com.ev.ampora_backend.entity.PaymentStatus;
 import com.ev.ampora_backend.repository.ChargingPaymentRepository;
@@ -34,6 +35,16 @@ public class ChargingPaymentService {
     public ChargingPayment getById(String id) {
         return repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Charging payment not found"));
+    }
+    public List<ChargingPaymentResponseDTO> getAll() {
+        return repository.findAll()
+                .stream()
+                .map(c -> ChargingPaymentResponseDTO.builder()
+                        .paymentId(c.getPaymentId())
+                        .status(c.getStatus())
+                        .amount(c.getAmount())
+                        .build())
+                .toList();
     }
 
     /* READ (BY USER) */

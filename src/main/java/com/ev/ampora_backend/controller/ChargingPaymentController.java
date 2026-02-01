@@ -19,7 +19,10 @@ public class ChargingPaymentController {
 
     private final ChargingPaymentService service;
 
-    /* CREATE (PENDING) */
+   @GetMapping
+   public List<ChargingPaymentResponseDTO> getAll() {
+       return service.getAll();
+   }
     @PostMapping("/pending")
     public ResponseEntity<Map<String, String>> createPending(
             @RequestBody ChargingPaymentRequestDTO dto) {
