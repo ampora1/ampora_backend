@@ -43,6 +43,9 @@ public class ChargingPaymentService {
                         .paymentId(c.getPaymentId())
                         .status(c.getStatus())
                         .amount(c.getAmount())
+                        .energyUsed(c.getEnergyUsed())
+                        .createdAt(c.getCreatedAt())
+
                         .build())
                 .toList();
     }
