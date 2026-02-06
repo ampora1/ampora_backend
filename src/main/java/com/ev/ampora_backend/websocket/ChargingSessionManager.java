@@ -4,17 +4,19 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArraySet;
 
 @Component
 public class ChargingSessionManager {
 
+    // userId -> frontend WebSocket
     private final Map<String, WebSocketSession> userSessions = new ConcurrentHashMap<>();
+
+    // chargerSessionId -> userId
     private final Map<String, String> chargerActiveUser = new ConcurrentHashMap<>();
 
-    // FRONTEND SESSION
+    /* FRONTEND SESSION */
+
     public void addUserSession(String userId, WebSocketSession session) {
         userSessions.put(userId, session);
     }
@@ -23,11 +25,12 @@ public class ChargingSessionManager {
         return userSessions.get(userId);
     }
 
-    public void removeUserSession(String userId) {
-        userSessions.remove(userId);
+    public void removeSession(WebSocketSession session) {
+        userSessions.entrySet().removeIf(entry -> entry.getValue().equals(session));
     }
 
-    // CHARGER SESSION
+    /* CHARGER SESSION */
+
     public void setActiveUser(String chargerId, String userId) {
         chargerActiveUser.put(chargerId, userId);
     }

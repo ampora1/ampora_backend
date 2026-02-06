@@ -24,6 +24,7 @@ public class ChargingWebSocketHandler extends TextWebSocketHandler {
     }
 
     /* ================= CONNECT ================= */
+
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
 
@@ -33,41 +34,17 @@ public class ChargingWebSocketHandler extends TextWebSocketHandler {
         if (userId != null) {
             sessionManager.addUserSession(userId, session);
             System.out.println("Frontend connected: " + userId);
-        }
-
-        System.out.println("WS CONNECTED: " + session.getId());
-    }
-
-    private String extractUserId(String query) {
-        if (query == null) return null;
-
-        for (String param : query.split("&")) {
-            String[] pair = param.split("=");
-            if (pair[0].equals("userId")) {
-                return pair[1];
-            }
-        }
-        return null;
-    }
-    private void handleLive(WebSocketSession chargerSession, TextMessage message) throws Exception {
-
-        String chargerId = chargerSession.getId();
-        String userId = sessionManager.getActiveUser(chargerId);
-
-        if (userId == null) return;
-
-        WebSocketSession userSession = sessionManager.getUserSession(userId);
-
-        if (userSession != null && userSession.isOpen()) {
-            userSession.sendMessage(message);
+        } else {
+            System.out.println("Charger connected: " + session.getId());
         }
     }
 
     /* ================= MESSAGE ================= */
+
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
 
-        System.out.println("📥 WS IN: " + message.getPayload());
+        System.out.println("WS IN: " + message.getPayload());
 
         JsonNode root = mapper.readTree(message.getPayload());
         String type = root.get("type").asText();
@@ -78,13 +55,76 @@ public class ChargingWebSocketHandler extends TextWebSocketHandler {
 
             case "LIVE" -> handleLive(session, message);
 
-
             case "SESSION_END" -> handleSessionEnd(session, message);
 
-
-            default -> System.out.println("⚠️ Unknown WS type: " + type);
+            default -> System.out.println("Unknown WS type: " + type);
         }
     }
+
+    /* ================= AUTH ================= */
+
+    private void handleAuth(WebSocketSession session, JsonNode root) throws Exception {
+
+        String uid = root.get("uid").asText();
+        System.out.println("AUTH REQUEST UID: " + uid);
+
+        RFIDResponse user = rfidService.getUserRFID(uid);
+
+        // RFID not found
+        if (user == null) {
+
+            String response = """
+            {
+              "type": "AUTH_RESPONSE",
+              "authorized": false
+            }
+            """;
+
+            session.sendMessage(new TextMessage(response));
+            return;
+        }
+
+        // Bind charger to user
+        String chargerId = session.getId();
+        sessionManager.setActiveUser(chargerId, user.getUserId());
+
+        String response = """
+        {
+          "type": "AUTH_RESPONSE",
+          "authorized": true,
+          "name": "%s"
+        }
+        """.formatted(user.getUsername());
+
+        session.sendMessage(new TextMessage(response));
+
+        System.out.println("AUTH OK: " + user.getUsername());
+    }
+
+    /* ================= LIVE DATA ================= */
+
+    private void handleLive(WebSocketSession chargerSession, TextMessage message) throws Exception {
+
+        String chargerId = chargerSession.getId();
+        String userId = sessionManager.getActiveUser(chargerId);
+
+        if (userId == null) {
+            System.out.println("No active user for charger");
+            return;
+        }
+
+        WebSocketSession userSession = sessionManager.getUserSession(userId);
+
+        if (userSession != null && userSession.isOpen()) {
+            userSession.sendMessage(message);
+        } else {
+            System.out.println("User not connected yet: " + userId);
+        }
+    }
+
+
+    /* ================= SESSION END ================= */
+
     private void handleSessionEnd(WebSocketSession chargerSession, TextMessage message) throws Exception {
 
         String chargerId = chargerSession.getId();
@@ -101,52 +141,28 @@ public class ChargingWebSocketHandler extends TextWebSocketHandler {
         sessionManager.removeActiveUser(chargerId);
     }
 
-    /* ================= AUTH ================= */
-    private void handleAuth(WebSocketSession session, JsonNode root) throws Exception {
+    /* ================= DISCONNECT ================= */
 
-        String uid = root.get("uid").asText();
-        System.out.println("🔐 AUTH REQUEST UID: " + uid);
+    @Override
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
 
-        RFIDResponse user = rfidService.getUserRFID(uid);
-        String chargerId = session.getId();
-        sessionManager.setActiveUser(chargerId, user.getUserId());
+        sessionManager.removeSession(session);
+        sessionManager.removeActiveUser(session.getId());
 
-        String response = """
-        {
-          "type": "AUTH_RESPONSE",
-          "authorized": true,
-          "name": "%s"
-        }
-        """.formatted(user.getUsername());
-
-        session.sendMessage(new TextMessage(response));
-        System.out.println("✅ AUTH OK: " + user.getUsername());
+        System.out.println("WS CLOSED: " + session.getId());
     }
 
-    /* ================= BROADCAST LIVE ================= */
-//    private void broadcast(TextMessage message) throws Exception {
-//        for (WebSocketSession client : sessionManager.getSessions()) {
-//            if (client.isOpen()) {
-//                client.sendMessage(message);
-//            }
-//        }
-//    }
-//
-//    /* ================= SESSION END ================= */
-//    private void broadcastSessionEnd(TextMessage message) throws Exception {
-//        System.out.println("🧾 SESSION END BROADCAST: " + message.getPayload());
-//
-//        for (WebSocketSession client : sessionManager.getSessions()) {
-//            if (client.isOpen()) {
-//                client.sendMessage(message);
-//            }
-//        }
-//    }
+    /* ================= HELPER ================= */
 
-    /* ================= DISCONNECT ================= */
-//    @Override
-//    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
-//        sessionManager.remove(session);
-//        System.out.println("🔴 WS CLOSED: " + session.getId());
-//    }
+    private String extractUserId(String query) {
+        if (query == null) return null;
+
+        for (String param : query.split("&")) {
+            String[] pair = param.split("=");
+            if (pair[0].equals("userId")) {
+                return pair[1];
+            }
+        }
+        return null;
+    }
 }
