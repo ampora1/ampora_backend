@@ -29,15 +29,23 @@ public class ChargingWebSocketHandler extends TextWebSocketHandler {
     public void afterConnectionEstablished(WebSocketSession session) {
 
         String query = session.getUri().getQuery();
-        String userId = extractUserId(query);
 
-        if (userId != null) {
+        String role = extractParam(query, "role");
+        String userId = extractParam(query, "userId");
+
+        if ("operator".equals(role)) {
+            sessionManager.addOperatorSession(session);
+            System.out.println("Operator connected: " + session.getId());
+
+        } else if (userId != null) {
             sessionManager.addUserSession(userId, session);
-            System.out.println("Frontend connected: " + userId);
+            System.out.println("User connected: " + userId);
+
         } else {
             System.out.println("Charger connected: " + session.getId());
         }
     }
+
 
     /* ================= MESSAGE ================= */
 
@@ -70,7 +78,7 @@ public class ChargingWebSocketHandler extends TextWebSocketHandler {
 
         RFIDResponse user = rfidService.getUserRFID(uid);
 
-        // RFID not found
+
         if (user == null) {
 
             String response = """
@@ -120,6 +128,21 @@ public class ChargingWebSocketHandler extends TextWebSocketHandler {
         } else {
             System.out.println("User not connected yet: " + userId);
         }
+        broadcastToOperators(message);
+
+    }
+
+    private void broadcastToOperators(TextMessage message) {
+        for (WebSocketSession session : sessionManager.getOperatorSessions()) {
+            try {
+                if (session.isOpen()) {
+                    session.sendMessage(message);
+                }
+            } catch (Exception e) {
+                System.out.println("Failed to send to operator: " + session.getId());
+                e.printStackTrace();
+            }
+        }
     }
 
 
@@ -150,6 +173,17 @@ public class ChargingWebSocketHandler extends TextWebSocketHandler {
         sessionManager.removeActiveUser(session.getId());
 
         System.out.println("WS CLOSED: " + session.getId());
+    }
+    private String extractParam(String query, String key) {
+        if (query == null) return null;
+
+        for (String param : query.split("&")) {
+            String[] pair = param.split("=");
+            if (pair.length == 2 && pair[0].equals(key)) {
+                return pair[1];
+            }
+        }
+        return null;
     }
 
     /* ================= HELPER ================= */

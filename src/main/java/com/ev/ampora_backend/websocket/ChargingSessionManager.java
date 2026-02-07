@@ -4,18 +4,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class ChargingSessionManager {
 
-    // userId -> frontend WebSocket
+    /* ================= USER SESSIONS ================= */
     private final Map<String, WebSocketSession> userSessions = new ConcurrentHashMap<>();
-
-    // chargerSessionId -> userId
-    private final Map<String, String> chargerActiveUser = new ConcurrentHashMap<>();
-
-    /* FRONTEND SESSION */
 
     public void addUserSession(String userId, WebSocketSession session) {
         userSessions.put(userId, session);
@@ -25,11 +21,19 @@ public class ChargingSessionManager {
         return userSessions.get(userId);
     }
 
-    public void removeSession(WebSocketSession session) {
-        userSessions.entrySet().removeIf(entry -> entry.getValue().equals(session));
+    /* ================= OPERATOR SESSIONS ================= */
+    private final Set<WebSocketSession> operatorSessions = ConcurrentHashMap.newKeySet();
+
+    public void addOperatorSession(WebSocketSession session) {
+        operatorSessions.add(session);
     }
 
-    /* CHARGER SESSION */
+    public Set<WebSocketSession> getOperatorSessions() {
+        return operatorSessions;
+    }
+
+    /* ================= CHARGER ACTIVE USER ================= */
+    private final Map<String, String> chargerActiveUser = new ConcurrentHashMap<>();
 
     public void setActiveUser(String chargerId, String userId) {
         chargerActiveUser.put(chargerId, userId);
@@ -41,5 +45,12 @@ public class ChargingSessionManager {
 
     public void removeActiveUser(String chargerId) {
         chargerActiveUser.remove(chargerId);
+    }
+
+    /* ================= CLEANUP ================= */
+    public void removeSession(WebSocketSession session) {
+        userSessions.entrySet().removeIf(entry -> entry.getValue().equals(session));
+        operatorSessions.remove(session);
+        chargerActiveUser.remove(session.getId());
     }
 }
