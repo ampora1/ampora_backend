@@ -112,6 +112,7 @@ public class UserService {
         user.setEmail(user1.getEmail());
         user.setPhone(user1.getPhone());
         user.setAddress(user1.getAddress());
+        user.setRole(user1.getRole());
         userRepository.save(user);
         return mapToDto(user);
 
