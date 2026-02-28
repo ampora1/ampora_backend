@@ -5,6 +5,7 @@ import com.ev.ampora_backend.dto.BookingDTO;
 import com.ev.ampora_backend.entity.*;
 import com.ev.ampora_backend.repository.BookingRepository;
 import com.ev.ampora_backend.repository.ChargerRepository;
+import com.ev.ampora_backend.repository.StationRepository;
 import com.ev.ampora_backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ public class BookingService {
     private final BookingRepository bookingRepo;
     private final UserRepository userRepo;
     private final ChargerRepository chargerRepo;
+    private final StationRepository stationRepo;
 
 
     private LocalDateTime safeParseTime(String time) {
@@ -120,6 +122,9 @@ public class BookingService {
     }
 
 
+
+
+
     public void confirmPayment(String bookingId) {
         Booking booking = bookingRepo.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
@@ -139,8 +144,10 @@ public class BookingService {
                         .date(b.getDate())
                         .startTime(b.getStartTime())
                         .endTime(b.getEndTime())
+                        .StationName(b.getCharger().getStation().getName())
+                        .Address(b.getCharger().getStation().getAddress())
                         .status(b.getBookingStatus())
-                        .amount(1000)
+                        .amount(b.getBookingFee())
                         .ChargerType(b.getCharger().getType())
                         .build()
         ).toList();

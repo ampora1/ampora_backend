@@ -20,7 +20,8 @@ public class BookingDTO {
     private String chargerId;
 
     private LocalDate date;
-
+    private String StationName;
+    private String Address;
     private LocalTime startTime;
     private LocalTime endTime;
     private double amount;
