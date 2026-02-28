@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
@@ -13,7 +14,7 @@ import java.util.List;
 public interface BookingRepository extends JpaRepository<Booking, String> {
 
     List<Booking> findByUser_UserId(String userId);
-
+    List<Booking> findByCharger_ChargerIdAndDate(String chargerId, LocalDate date);
     List<Booking> findByCharger_ChargerId(String chargerId);
 
     @Query("""

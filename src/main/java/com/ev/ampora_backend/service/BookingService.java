@@ -123,7 +123,22 @@ public class BookingService {
 
 
 
+    public List<BookingDTO> getBookingsByChargerAndDate(String chargerId, LocalDate date) {
 
+        return bookingRepo
+                .findByCharger_ChargerIdAndDate(chargerId, date)
+                .stream()
+                .map(b -> BookingDTO.builder()
+                        .bookingId(b.getBookingId())
+                        .userId(b.getUser().getUserId())
+                        .chargerId(b.getCharger().getChargerId())
+                        .date(b.getDate())
+                        .startTime(b.getStartTime())
+                        .endTime(b.getEndTime())
+                        .status(b.getBookingStatus())
+                        .build()
+                ).toList();
+    }
 
     public void confirmPayment(String bookingId) {
         Booking booking = bookingRepo.findById(bookingId)

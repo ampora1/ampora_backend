@@ -7,6 +7,7 @@ import com.ev.ampora_backend.service.BookingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -22,6 +23,14 @@ public class BookingController {
     public BookingDTO createBooking(@RequestBody BookingDTO dto) {
         dto.setStatus(BookingStatus.PENDING); // default
         return bookingService.createBooking(dto);
+    }
+
+    @GetMapping("/charger/{chargerId}/date/{date}")
+    public List<BookingDTO> getBookingsByChargerAndDate(
+            @PathVariable String chargerId,
+            @PathVariable LocalDate date) {
+
+        return bookingService.getBookingsByChargerAndDate(chargerId, date);
     }
 
     // ===================== CHECK AVAILABILITY =====================
