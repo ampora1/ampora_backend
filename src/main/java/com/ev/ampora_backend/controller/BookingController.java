@@ -24,7 +24,10 @@ public class BookingController {
         dto.setStatus(BookingStatus.PENDING); // default
         return bookingService.createBooking(dto);
     }
-
+    @GetMapping("/operator/{operatorId}")
+    public List<BookingDTO> getBookingsForOperator(@PathVariable String operatorId) {
+        return bookingService.getBookingsForOperator(operatorId);
+    }
     @GetMapping("/charger/{chargerId}/date/{date}")
     public List<BookingDTO> getBookingsByChargerAndDate(
             @PathVariable String chargerId,

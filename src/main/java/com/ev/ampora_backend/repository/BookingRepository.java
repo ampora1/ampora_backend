@@ -16,7 +16,7 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
     List<Booking> findByUser_UserId(String userId);
     List<Booking> findByCharger_ChargerIdAndDate(String chargerId, LocalDate date);
     List<Booking> findByCharger_ChargerId(String chargerId);
-
+    List<Booking> findByCharger_Station_Operator_UserId(String operatorId);
     @Query("""
         SELECT b FROM Booking b
         WHERE b.charger.chargerId = :chargerId

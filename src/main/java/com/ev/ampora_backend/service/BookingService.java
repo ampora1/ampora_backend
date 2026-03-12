@@ -121,7 +121,26 @@ public class BookingService {
         return booking.getBookingId(); // UUID / generated ID
     }
 
+    public List<BookingDTO> getBookingsForOperator(String operatorId) {
 
+        return bookingRepo
+                .findByCharger_Station_Operator_UserId(operatorId)
+                .stream()
+                .map(b -> BookingDTO.builder()
+                        .bookingId(b.getBookingId())
+                        .userId(b.getUser().getUserId())
+                        .chargerId(b.getCharger().getChargerId())
+                        .date(b.getDate())
+                        .startTime(b.getStartTime())
+                        .endTime(b.getEndTime())
+                        .status(b.getBookingStatus())
+                        .StationName(b.getCharger().getStation().getName())
+                        .Address(b.getCharger().getStation().getAddress())
+                        .ChargerType(b.getCharger().getType())
+                        .amount(b.getBookingFee())
+                        .build())
+                .toList();
+    }
 
     public List<BookingDTO> getBookingsByChargerAndDate(String chargerId, LocalDate date) {
 
