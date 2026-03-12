@@ -104,5 +104,13 @@ public class StationService {
         return om.readValue(is, new TypeReference<List<Station>>() {});
     }
 
+    public List<StationResponseDTO> getStationsByOperator(String operatorId){
+
+        List<Station> stations = stationRepository.findByOperator_UserId(operatorId);
+
+        return stations.stream()
+                .map(this::toDTO)
+                .toList();
+    }
 
 }

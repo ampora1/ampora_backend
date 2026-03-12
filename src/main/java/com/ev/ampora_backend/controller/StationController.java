@@ -49,5 +49,13 @@ public class StationController {
         stationService.delete(id);
         return ResponseEntity.ok("Station Deleted");
     }
+    @GetMapping("/operator/{operatorId}")
+    public ResponseEntity<List<StationResponseDTO>> getByOperator(
+            @PathVariable String operatorId){
+
+        return ResponseEntity.ok(
+                stationService.getStationsByOperator(operatorId)
+        );
+    }
 
 }
