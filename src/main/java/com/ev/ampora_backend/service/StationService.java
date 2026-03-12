@@ -85,6 +85,7 @@ public class StationService {
         return StationResponseDTO.builder()
                 .stationId(s.getStationId())
                 .name(s.getName())
+                .operator(s.getOperator().getFullName())
                 .address(s.getAddress())
                 .latitude(s.getLatitude())
                 .longitude(s.getLongitude())
