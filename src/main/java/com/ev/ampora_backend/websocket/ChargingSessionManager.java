@@ -1,5 +1,6 @@
 package com.ev.ampora_backend.websocket;
 
+import lombok.Getter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -11,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ChargingSessionManager {
 
     /* ================= USER SESSIONS ================= */
+
     private final Map<String, WebSocketSession> userSessions = new ConcurrentHashMap<>();
 
     public void addUserSession(String userId, WebSocketSession session) {
@@ -22,17 +24,28 @@ public class ChargingSessionManager {
     }
 
     /* ================= OPERATOR SESSIONS ================= */
+
+    @Getter
     private final Set<WebSocketSession> operatorSessions = ConcurrentHashMap.newKeySet();
 
     public void addOperatorSession(WebSocketSession session) {
         operatorSessions.add(session);
     }
 
-    public Set<WebSocketSession> getOperatorSessions() {
-        return operatorSessions;
+    /* ================= CHARGER SESSIONS ================= */
+
+    private final Map<String, WebSocketSession> chargerSessions = new ConcurrentHashMap<>();
+
+    public void addChargerSession(String chargerId, WebSocketSession session) {
+        chargerSessions.put(chargerId, session);
     }
 
-    /* ================= CHARGER ACTIVE USER ================= */
+    public WebSocketSession getChargerSession(String chargerId) {
+        return chargerSessions.get(chargerId);
+    }
+
+    /* ================= ACTIVE USER ON CHARGER ================= */
+
     private final Map<String, String> chargerActiveUser = new ConcurrentHashMap<>();
 
     public void setActiveUser(String chargerId, String userId) {
@@ -47,10 +60,16 @@ public class ChargingSessionManager {
         chargerActiveUser.remove(chargerId);
     }
 
-    /* ================= CLEANUP ================= */
+    /* ================= REMOVE SESSION ================= */
+
     public void removeSession(WebSocketSession session) {
+
         userSessions.entrySet().removeIf(entry -> entry.getValue().equals(session));
+
         operatorSessions.remove(session);
+
+        chargerSessions.entrySet().removeIf(entry -> entry.getValue().equals(session));
+
         chargerActiveUser.remove(session.getId());
     }
 }

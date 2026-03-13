@@ -23,12 +23,13 @@ public class ChargingWebSocketHandler extends TextWebSocketHandler {
         this.rfidService = rfidService;
     }
 
-    /* ================= CONNECT ================= */
+
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
 
         String query = session.getUri().getQuery();
+        System.out.println("Incoming WS URI: " + session.getUri());
 
         String role = extractParam(query, "role");
         String userId = extractParam(query, "userId");
@@ -42,12 +43,13 @@ public class ChargingWebSocketHandler extends TextWebSocketHandler {
             System.out.println("User connected: " + userId);
 
         } else {
+            sessionManager.addChargerSession(session.getId(), session);
             System.out.println("Charger connected: " + session.getId());
         }
     }
 
 
-    /* ================= MESSAGE ================= */
+
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
@@ -64,13 +66,41 @@ public class ChargingWebSocketHandler extends TextWebSocketHandler {
             case "LIVE" -> handleLive(session, message);
 
             case "SESSION_END" -> handleSessionEnd(session, message);
+            case "QR_SESSION_START" -> handleQrStart(session, root);
 
             default -> System.out.println("Unknown WS type: " + type);
         }
     }
 
-    /* ================= AUTH ================= */
 
+    private void handleQrStart(WebSocketSession session, JsonNode root) throws Exception {
+
+        String userId = root.get("userId").asText();
+        String chargerId = root.get("chargerId").asText();
+
+        System.out.println("QR START: user=" + userId + " charger=" + chargerId);
+
+        // map user to charger
+        sessionManager.setActiveUser(chargerId, userId);
+
+        // send command to charger
+        WebSocketSession chargerSession = sessionManager.getChargerSession(chargerId);
+
+        if (chargerSession != null && chargerSession.isOpen()) {
+
+            chargerSession.sendMessage(new TextMessage("""
+        {
+          "type":"START_CHARGING"
+        }
+        """));
+        }
+
+        session.sendMessage(new TextMessage("""
+    {
+      "type":"QR_AUTH_OK"
+    }
+    """));
+    }
     private void handleAuth(WebSocketSession session, JsonNode root) throws Exception {
 
         String uid = root.get("uid").asText();
@@ -92,7 +122,7 @@ public class ChargingWebSocketHandler extends TextWebSocketHandler {
             return;
         }
 
-        // Bind charger to user
+
         String chargerId = session.getId();
         sessionManager.setActiveUser(chargerId, user.getUserId());
 
@@ -109,7 +139,7 @@ public class ChargingWebSocketHandler extends TextWebSocketHandler {
         System.out.println("AUTH OK: " + user.getUsername());
     }
 
-    /* ================= LIVE DATA ================= */
+
 
     private void handleLive(WebSocketSession chargerSession, TextMessage message) throws Exception {
 
@@ -146,7 +176,7 @@ public class ChargingWebSocketHandler extends TextWebSocketHandler {
     }
 
 
-    /* ================= SESSION END ================= */
+
 
     private void handleSessionEnd(WebSocketSession chargerSession, TextMessage message) throws Exception {
 
@@ -164,7 +194,7 @@ public class ChargingWebSocketHandler extends TextWebSocketHandler {
         sessionManager.removeActiveUser(chargerId);
     }
 
-    /* ================= DISCONNECT ================= */
+
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
@@ -186,7 +216,7 @@ public class ChargingWebSocketHandler extends TextWebSocketHandler {
         return null;
     }
 
-    /* ================= HELPER ================= */
+
 
     private String extractUserId(String query) {
         if (query == null) return null;
