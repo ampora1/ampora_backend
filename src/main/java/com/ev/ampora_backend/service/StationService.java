@@ -69,6 +69,11 @@ public class StationService {
         station.setLatitude(dto.getLatitude());
         station.setLongitude(dto.getLongitude());
         station.setStatus(dto.getStatus());
+        if(dto.getOperatorId() != null){
+        User operator = userRepository.findById(dto.getOperatorId())
+                .orElseThrow(() -> new RuntimeException("Operator not found"));
+        station.setOperator(operator);
+       }
         stationRepository.save(station);
         return toDTO(station);
     }
@@ -85,6 +90,7 @@ public class StationService {
         return StationResponseDTO.builder()
                 .stationId(s.getStationId())
                 .name(s.getName())
+                .operator(s.getOperator() != null ? s.getOperator().getFullName() : null)
                 .address(s.getAddress())
                 .latitude(s.getLatitude())
                 .longitude(s.getLongitude())

@@ -11,6 +11,7 @@ import java.util.List;
 public class StationResponseDTO {
     private String stationId;
     private String name;
+    private String operator;
     private String address;
     private double latitude;
     private double longitude;
