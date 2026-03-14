@@ -49,8 +49,8 @@ services:
       DB_NAME: ampora
       DB_USER: postgres
       DB_PASSWORD: postgres123
-      GROQ_API_KEY: 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
-      GMAPS_API_KEY: AIzaSyCGX_5oc5ijf_B-df9TT_zocjcc4-qfBRk
+      GROQ_API_KEY: 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
+      GMAPS_API_KEY: AIzaSyCGX_5oc5ijf_B-df9TT_zocjcc4-qfBRk 
 
 volumes:
   postgres_data:
