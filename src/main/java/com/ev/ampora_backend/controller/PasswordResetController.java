@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/password-reset")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173,https://ampora.dev")
+@CrossOrigin(origins = "http://localhost:5173","https://ampora.dev")
 public class PasswordResetController {
 
     private final IPasswordResetService passwordResetService;
