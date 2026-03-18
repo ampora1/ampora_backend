@@ -43,4 +43,13 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
             @Param("end") LocalDateTime end
     );
 
+    @Query("""
+    SELECT COUNT(b) > 0 FROM Booking b
+    WHERE b.user.userId = :userId
+    AND b.date = :date
+    AND b.bookingStatus IN ('PENDING','CONFIRMED')
+""")
+    boolean existsByUserAndDate(@Param("userId") String userId,
+                                @Param("date") LocalDate date);
+
 }

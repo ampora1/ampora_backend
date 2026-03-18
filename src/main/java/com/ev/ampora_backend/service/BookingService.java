@@ -52,8 +52,18 @@ public class BookingService {
 
 
     public BookingDTO createBooking(BookingDTO dto) {
+
         System.out.println("Booking created");
         System.out.println("dto: " + dto.toString());
+
+        boolean alreadyBooked = bookingRepo.existsByUserAndDate(
+                dto.getUserId(),
+                dto.getDate()
+        );
+
+        if (alreadyBooked) {
+            throw new RuntimeException("You can only book one charging slot per day");
+        }
         User user = userRepo.findById(dto.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -100,6 +110,15 @@ public class BookingService {
     }
 
     public String createPendingBooking(BookingDTO dto) {
+
+        boolean alreadyBooked = bookingRepo.existsByUserAndDate(
+                dto.getUserId(),
+                dto.getDate()
+        );
+
+        if (alreadyBooked) {
+            throw new RuntimeException("You already have a booking for this day");
+        }
         User user = userRepo.findById(dto.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         Charger charger = chargerRepo.findById(dto.getChargerId())
